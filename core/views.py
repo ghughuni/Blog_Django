@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
+from .forms import UserLoginForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
@@ -46,6 +47,22 @@ def postDetail(request, pk):
 	posts = Post.objects.get(post_id=pk)
 	serializer = PostSerializer(posts, many=False)
 	return Response(serializer.data)
+
+def loginView(request):
+
+    form = UserLoginForm(request.POST or None)
+    if form.is_valid():
+        username = form.cleaned_data.get("username")
+        password = form.cleaned_data.get("password")
+        users = authenticate(username=username, password=password)
+        login(request, users)
+        return redirect('index')
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'login.html', context)
 
 def logout_view(request):
     logout(request)
