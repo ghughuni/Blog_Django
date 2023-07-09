@@ -7,6 +7,7 @@ from .views import (
     add_post,
     postsList,
     postDetail,
+    register,
     loginView,
     logout_view
 )
@@ -15,6 +16,7 @@ urlpatterns = [
     path("", index, name="index"),
     path("add_post", add_post, name="add_post"),
     path('login/', loginView, name='login'),
+    path('register/', register, name='register'),
     path('logout_view/', logout_view, name='logout_view'),
 	path('post-list/', postsList, name="post-list"),
 	path('post-detail/<str:pk>/', postDetail, name="post-detail"),
