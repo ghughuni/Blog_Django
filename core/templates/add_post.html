@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Add new post{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="container p-4 my-5 bg-white rounded">
+        <div class="form-group p-2">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+        <div class="form-group p-2">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+        </div>
+        <div class="form-group p-2">
+            {{ form.body.label_tag }}
+            {{ form.body }}
+        </div>
+        <div class="form-group p-2">
+            {{ form.author.label_tag }}
+            {{ form.author }}
+        </div>
+        <div class="form-group p-2">
+            {{ form.slug.label_tag }}
+            {{ form.slug }}
+        </div>
+        <input type="submit" class="btn btn-primary" value="Add Post">
+    </div>
+</form>
+
+{% endif %}
+{% endblock %}
