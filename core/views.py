@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
@@ -45,3 +46,7 @@ def postDetail(request, pk):
 	posts = Post.objects.get(post_id=pk)
 	serializer = PostSerializer(posts, many=False)
 	return Response(serializer.data)
+
+def logout_view(request):
+    logout(request)
+    return redirect('/')
