@@ -24,3 +24,7 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+.shadow {
+  height: 100%;
+}

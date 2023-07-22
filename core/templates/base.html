@@ -21,11 +21,9 @@
 
 <body>
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-secondary text-white">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-secondary text-white fixed-top">
     <div class="container-fluid">
-      {% if user.is_authenticated %}
       <a class="navbar-brand fw-bolder mx-5 text-white" href="{% url 'index' %}">Django_Blog</a>
-
       <button class="navbar-toggler " type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -35,28 +33,29 @@
           <li class="nav-item">
             <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'index' %}">Home</a>
           </li>
+          {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'add_post' %}">Add
-              Posts</a>
+            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
           </li>
+          {% endif %}
         </ul>
+        {% if user.is_authenticated %}
         <div class="d-flex justify-content-end">
           <a href="{% url 'index' %}"><button class="btn btn-outline-secondary text-white rounded-pill" type="button"><i
                 class="bi bi-person-circle "></i> {{user}}</button></a>
           <a href="{% url 'logout_view' %}"><i class="bi bi-box-arrow-in-right fs-4 text-white ms-4 me-5"
               title="Log Out"></i></a>
         </div>
+        {% else %}
+        <div class="d-flex justify-content-end">
+          <a href="{% url 'register' %}"><button class="btn btn-outline-info rounded-pill me-2" title="LogIn"
+              type="button"><i class="bi bi-person-circle ">
+              </i>Register</button></a>
+          <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill me-5" title="LogIn"
+              type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
+        </div>
+        {% endif %}
       </div>
-      {% else %}
-      <a class="navbar-brand fw-bolder mx-5" href="{% url 'index' %}">Django_Blog</a>
-      <div class="d-flex justify-content-end">
-        <a href="{% url 'register' %}"><button
-            class="btn btn-outline-info rounded-pill me-2" title="LogIn" type="button"><i class="bi bi-person-circle ">
-            </i>Register</button></a>
-        <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill me-5" title="LogIn"
-            type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
-      </div>
-      {% endif %}
     </div>
   </nav>
   <div class="container pt-3 mt-5 mainbox">
