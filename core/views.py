@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from .forms import UserLoginForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
@@ -36,6 +36,14 @@ def add_post(request):
     context = {'form': form}
     return render(request, 'add_post.html', context)
 
+def delete_post(request, pk):
+    if request.method == 'POST':
+        if 'delete_button' in request.POST:
+            posts = get_object_or_404(Post, post_id=pk)
+            posts.delete()
+            return redirect('index')
+    else:
+        return HttpResponseBadRequest("Invalid request method.")
 
     
 @api_view(['GET'])

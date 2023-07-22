@@ -5,8 +5,8 @@ from django.conf.urls.static import static
 from .views import (
     index,
     add_post,
+    delete_post,
     postsList,
-    postDetail,
     register,
     loginView,
     logout_view
@@ -15,9 +15,9 @@ from .views import (
 urlpatterns = [
     path("", index, name="index"),
     path("add_post", add_post, name="add_post"),
+    path('delete_post/<str:pk>/', delete_post, name='delete_post'),
     path('login/', loginView, name='login'),
     path('register/', register, name='register'),
     path('logout_view/', logout_view, name='logout_view'),
 	path('post-list/', postsList, name="post-list"),
-	path('post-detail/<str:pk>/', postDetail, name="post-detail"),
 ] + static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)
