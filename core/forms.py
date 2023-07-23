@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['title', 'image', 'body', 'slug']			
 
 class UserLoginForm(forms.Form):
 	username = forms.CharField()

@@ -28,7 +28,7 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-image img-fluid"><img src="{{ post.image.url }}" alt="Post Image"
-                    class="card-img-top"></div>
+                    class="card-img-top img-fluid"></div>
                 <div class="modal-body">
                   {{ post.body }}
                 </div>
@@ -38,7 +38,7 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger" name="delete_button">Delete</button>
                   </form>
-                    <button type="button" class="btn btn-warning">Update</button>
+                    <a href="{% url 'update_post' pk=post.post_id %}" class="btn btn-warning">Update</a>
                   {% endif %}
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -46,11 +46,9 @@
             </div>
           </div>
           <p class="card-text">{{ post.body }}</p>
-          <div class="mt-auto">
-            <div class="card-footer">
-              <small class="text-muted">{{ post.author }}</small>
-              <small class="text-muted float-end">{{ post.created }}</small>
-            </div>
+          <div class="mt-auto card-footer">
+            <small class="text-muted">{{ post.author }}</small>
+            <small class="text-muted float-end">{{ post.created }}</small>
           </div>
         </div>
       </div>

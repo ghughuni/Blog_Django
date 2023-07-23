@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
+from .forms import PostForm
 
 def index(request):
     posts=Post.objects.all().order_by('-created')
@@ -22,12 +23,12 @@ def index(request):
 
     return render(request, "index.html", context)
 
-from .forms import PostForm
-
 def add_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
             form.save()
             return redirect('index')
     else:
@@ -45,7 +46,20 @@ def delete_post(request, pk):
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
-    
+def update_post(request, pk):
+    post = get_object_or_404(Post, post_id=pk)
+
+    if request.method == 'POST':
+            form = PostForm(request.POST, request.FILES, instance=post)
+            form.instance.author = post.author
+            if form.is_valid():
+                form.save()
+                return redirect('index')
+    else:
+        form = PostForm(instance=post)
+    return render(request, 'update_post.html', {'form': form, 'post': post})
+
+
 @api_view(['GET'])
 def postsList(request):
 	posts = Post.objects.all()
