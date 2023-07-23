@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
 from .forms import UserLoginForm
 from django.views.decorators.csrf import csrf_exempt
@@ -14,6 +15,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import PostForm
+from .forms import UserProfileForm
 
 def index(request):
     posts=Post.objects.all().order_by('-created')
@@ -59,6 +61,26 @@ def update_post(request, pk):
         form = PostForm(instance=post)
     return render(request, 'update_post.html', {'form': form, 'post': post})
 
+@login_required
+def user_page(request):
+    user = request.user
+    posts = Post.objects.filter(author=user).order_by('-created')
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_page')
+
+    else:
+        form = UserProfileForm(instance=user)
+
+    context = {
+        'user': user,
+        'posts': posts,
+        'form': form,
+    }
+    return render(request, 'user_page.html', context)
 
 @api_view(['GET'])
 def postsList(request):

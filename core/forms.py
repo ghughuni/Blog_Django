@@ -1,5 +1,6 @@
 from django import forms
 from .models import Post
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 class PostForm(forms.ModelForm):
@@ -25,3 +26,10 @@ class UserLoginForm(forms.Form):
 				raise forms.ValidationError("This user is not active")
 
 		return super(UserLoginForm, self).clean(*args, **kwargs)
+	
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'password']
+	
+	
