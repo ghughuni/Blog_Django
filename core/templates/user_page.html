@@ -48,18 +48,56 @@
                 <div class="container">
                     <div class="row row-cols-1 row-cols-md-3 g-4 ">
                         {% for post in posts %}
-                        <div class="col shadow p-3 mb-5 bg-body rounded">
-                            <div class="card">
+                        <div class="col-md-4 p-2">
+                            <div class="card shadow d-flex flex-column">
                                 <img src="{{ post.image.url }}" alt="Post Image" class="card-img-top img-fluid">
-                                <div class="card-body">
-                                    <h4 class="card-title">{{ post.title }}</h4>
+                                <div class="card-body d-flex flex-column">
+                                    <a href="#"><span class="badge  btn-secondary rounded-pill">
+                                            <smaller class="card-title">{{ post.slug }}</smaller>
+                                        </span>
+                                    </a>
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="btn btn-link text-decoration-none"
+                                        data-bs-toggle="modal" data-bs-target="#postdetail{{ post.pk }}">
+                                        <h4><strong class="card-title fst-italic ">{{ post.title }}</strong></h4>
+                                    </button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="postdetail{{ post.pk }}" tabindex="-1"
+                                        aria-labelledby="ModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog  modal-fullscreen">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="text-primary "><strong class="card-title fst-italic ">{{ post.title }}</strong></h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-image img-fluid"><img src="{{ post.image.url }}"
+                                                        alt="Post Image" class="card-img-top img-fluid"></div>
+                                                <div class="modal-body">
+                                                    {{ post.body }}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    {% if user.is_authenticated and user.id == post.author.id %}
+                                                    <form action="{% url 'delete_post' post.post_id %}" method="post">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger"
+                                                            name="delete_button">Delete</button>
+                                                    </form>
+                                                    <a href="{% url 'update_post' pk=post.post_id %}"
+                                                        class="btn btn-warning">Update</a>
+                                                    {% endif %}
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <p class="card-text">{{ post.body }}</p>
+                                    <div class="mt-auto card-footer">
+                                        <small class="text-muted">{{ post.author }}</small>
+                                        <small class="text-muted float-end">{{ post.created }}</small>
+                                    </div>
                                 </div>
-                                <div class="card-footer">
-                                    <small class="text-muted">{{ post.author }}</small>
-                                    <small class="text-muted float-end">{{ post.created }}</small>
-                                </div>
-                                <!-- Add modal button here -->
                             </div>
                         </div>
                         {% endfor %}
