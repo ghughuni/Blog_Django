@@ -2,34 +2,42 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<form method="POST">
-	{% csrf_token %}
-	<div class="col-md-6 offset-md-3 bg-white p-3 mt-3 rounded">
-        <h1 class="text-center">Login</h1>
-        <p class="text-center text-danger"></p>   
-        <form method="POST" action="{% url 'index' %}">
+<div class="container p-4 my-5 rounded">
+    <div class="row justify-content-center p-4 my-5">
+        <form method="POST">
             {% csrf_token %}
-            <form>
-                <!-- Username input -->
-                <div class="form-group my-4 px-4">
-                    <input type="text" id="form2Example1" class="form-control" name="username" placeholder="Username"
-                        required />
-                </div>
-    
-                <!-- Password input -->
-                <div class="form-group my-4 px-4">
-                    <input type="password" id="form2Example2" class="form-control" name="password" placeholder="Password"
-                        required />
-                </div>
+            <div class="col-md-6 offset-md-3 bg-white p-3 my-5 rounded">
+                <h1 class="text-center">Login</h1>
+                <p class="text-center text-danger"></p>
+                <form method="POST" action="{% url 'index' %}">
+                    {% csrf_token %}
+                    <form>
+                        <!-- Username input -->
+                        <div class="form-group my-4 px-4">
+                            <input type="text" id="form2Example1" class="form-control" name="username"
+                                placeholder="Username" required />
+                        </div>
 
-                <!-- Submit button -->
-                <div class="d-flex justify-content-center">
-                    <button type="submit" class="btn btn-outline-primary btn-block mb-4 rounded-pill">Sign in</button>
-                </div>
-            </form>
-    
+                        <!-- Password input -->
+                        <div class="form-group my-4 px-4">
+                            <input type="password" id="form2Example2" class="form-control" name="password"
+                                placeholder="Password" required />
+                        </div>
+
+                        <!-- Submit button -->
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-outline-primary btn-block mb-4 rounded-pill">Sign
+                                in</button>
+                        </div>
+                    </form>
+                    <hr class="my-5">
+                    <div class="text-center">
+                        <p class="mb-0 text-warning">or</p>
+                        <a href="{% url 'register' %}" class="btn btn-outline-info rounded-pill my-3 px-3">Register</a>
+                    </div>
+                </form>
+            </div>
         </form>
     </div>
-</form>
-
+</div>
 {% endblock %}

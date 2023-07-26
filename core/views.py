@@ -19,8 +19,10 @@ from .forms import UserProfileForm
 
 def index(request):
     posts=Post.objects.all().order_by('-created')
+    tags=Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
     context = {
-        'posts': posts
+        'posts': posts,
+        'tags': tags,
     }
 
     return render(request, "index.html", context)
