@@ -11,7 +11,8 @@ from .views import (
     register,
     loginView,
     logout_view,
-    user_page
+    user_page,
+    contact
 )
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
     path('update/<str:pk>/', update_post, name='update_post'),
     path('user_page/', user_page, name='user_page'),
     path('login/', loginView, name='login'),
+    path('contact/', contact, name='contact'),
     path('register/', register, name='register'),
     path('logout_view/', logout_view, name='logout_view'),
 	path('post-list/', postsList, name="post-list"),

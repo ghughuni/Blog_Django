@@ -96,6 +96,9 @@ def postDetail(request, pk):
 	serializer = PostSerializer(posts, many=False)
 	return Response(serializer.data)
 
+def contact(request):
+    return render(request, 'contact.html')
+
 def register(request):
     title = 'Create an account'
     if request.method == 'POST':
