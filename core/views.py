@@ -16,15 +16,22 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import PostForm
 from .forms import UserProfileForm
+from django.db.models import Q
 
 def index(request):
-    posts=Post.objects.all().order_by('-created')
-    tags=Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    search_query = request.GET.get('q')
+    if search_query:
+        posts = Post.objects.filter(
+            Q(title__icontains=search_query) | Q(body__icontains=search_query)
+        ).order_by('-created')
+    else:
+        posts = Post.objects.all().order_by('-created')
+
+    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
     context = {
         'posts': posts,
         'tags': tags,
     }
-
     return render(request, "index.html", context)
 
 def index_by_tag(request, tag_slug):

@@ -73,3 +73,12 @@ body {
     justify-content: center;
   }
 }
+
+@media only screen and (max-width: 768px) {
+  .tags{
+    display: none;
+  }
+  .tops{
+    display: none;
+  }
+}

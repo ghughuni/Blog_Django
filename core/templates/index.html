@@ -48,10 +48,22 @@
     </div>
   </div>
 </div>
+<!-- Search Panel -->
+<div class="container mt-4 col-md-4">
+  <div class="row">
+    <div class="col-md-12">
+      <form action="{% url 'index' %}" method="GET" class="d-flex">
+          <label for="searchInput" class="sr-only">Search</label>
+          <input type="search" name="q" class="form-control me-2" id="searchInput" placeholder="Search...">
+        <button type="submit" class="btn btn-success">Search</button>
+      </form>
+    </div>
+  </div>
+</div>
 <!-- Tags Section -->
 <div class="container mt-4">
   <div class="row">
-    <div class="col-md-2">
+    <div class="col-md-2 tags">
       <h4>All categories</h4>
       <ul>
         {% for tag in tags %}
@@ -115,7 +127,7 @@
       </div>
     </div>
     <!-- Right Section -->
-    <div class="col-md-2">
+    <div class="col-md-2 tops">
       <h4>Top Posts</h4>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam id dolor eu lacus lacinia vestibulum.</p>
     </div>
