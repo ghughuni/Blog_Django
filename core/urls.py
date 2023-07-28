@@ -12,7 +12,8 @@ from .views import (
     loginView,
     logout_view,
     user_page,
-    contact
+    contact,
+    index_by_tag
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('logout_view/', logout_view, name='logout_view'),
 	path('post-list/', postsList, name="post-list"),
+    path('tag/<str:tag_slug>/', index_by_tag, name='index_by_tag'),
 ] + static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)

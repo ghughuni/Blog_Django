@@ -27,6 +27,17 @@ def index(request):
 
     return render(request, "index.html", context)
 
+def index_by_tag(request, tag_slug):
+    posts = Post.objects.filter(slug=tag_slug).order_by('-created')
+    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    
+    context = {
+        'posts': posts,
+        'tags': tags,
+    }
+
+    return render(request, "index.html", context)
+
 def add_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
