@@ -15,6 +15,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
+from .forms import CommentForm
 
 def index(request):
     search_query = request.GET.get('q')
@@ -102,9 +103,35 @@ def user_page(request):
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
-    
+
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            content = request.POST['content']
+            Comment.objects.create(post=post, author=request.user, content=content)
+
     context = {
         'post': post,
+    }
+
+    return render(request, 'post_detail.html', context)                                                                                                 
+
+def add_comment(request, pk):
+    post = get_object_or_404(Post, post_id=pk)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            return redirect('postDetails', pk=pk)
+    else:
+        form = CommentForm()
+
+    context = {
+        'post': post,
+        'form': form,
     }
 
     return render(request, 'post_detail.html', context)
