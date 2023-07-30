@@ -13,7 +13,8 @@ from .views import (
     logout_view,
     user_page,
     contact,
-    index_by_tag
+    index_by_tag,
+    postDetails
 )
 
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
     path('delete_post/<str:pk>/', delete_post, name='delete_post'),
     path('update/<str:pk>/', update_post, name='update_post'),
     path('user_page/', user_page, name='user_page'),
+    path('post/<str:pk>/', postDetails, name='postDetails'),
     path('login/', loginView, name='login'),
     path('contact/', contact, name='contact'),
     path('register/', register, name='register'),

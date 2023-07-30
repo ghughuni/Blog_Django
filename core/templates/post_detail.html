@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}post{% endblock %}
+
+{% block content %}
+<div class="col-md-8 m-auto p-2">
+    <!-- header of post -->
+    <div class="mb-2 d-flex justify-content-between align-items-center p-2">
+        <h1 class="fw-bolder mb-1 text-primary "><strong class="card-title fst-italic ">{{ post.title }}</strong></h1>
+        <a href="{% url 'index' %}"><button type="button" class="btn-close" aria-label="Close"></button></a>
+    </div>
+    <!-- info of post -->
+    <div class="bg-light p-2">
+        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created }} | by {{ post.author.first_name }}
+                {{ post.author.last_name }}</small></div>
+        <a href="#"><span class="badge rounded-pill bg-primary">
+                <small class="card-title ">{{ post.slug }}</small>
+            </span>
+        </a>
+    </div>
+    <!-- body of post -->
+    <div class="overflow-auto">
+        <div class="image mb-3"><img src="{{ post.image.url }}" alt="Post Image" class="card-img-top img-fluid"></div>
+        <div class="body mb-3">
+            {{ post.body }}
+        </div>
+        <div class="footer mb-2 d-flex justify-content-end">
+            {% if user.is_authenticated and user.id == post.author.id %}
+            <form action="{% url 'delete_post' post.post_id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger me-2" name="delete_button">Delete</button>
+            </form>
+            <a href="{% url 'update_post' pk=post.post_id %}" class="btn btn-warning">Update</a>
+            {% endif %}
+        </div>
+        <!-- comment section -->
+        <section class="mb-5">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <!-- Comment form-->
+                    <form class="mb-4"><textarea class="form-control" rows="3"
+                            placeholder="Join the discussion and leave a comment!"></textarea></form>
+                    <!-- Single comment-->
+                    <div class="d-flex">
+                        <div class="flex-shrink-0"><img class="rounded-circle"
+                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..."></div>
+                        <div class="ms-3">
+                            <div class="fw-bold">Commenter Name</div>
+                            When I look at the universe and all the ways the universe wants to kill us, I find it
+                            hard to reconcile that with statements of beneficence.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+{% endblock %}

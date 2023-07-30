@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
-from .forms import UserLoginForm
+from .forms import UserLoginForm, PostForm, UserProfileForm, CommentForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from .models import Post
+from .models import Post, Comment
 from .serializers import PostSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -14,8 +14,6 @@ from django.utils import timezone
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .forms import PostForm
-from .forms import UserProfileForm
 from django.db.models import Q
 
 def index(request):
@@ -101,6 +99,15 @@ def user_page(request):
         'form': form,
     }
     return render(request, 'user_page.html', context)
+
+def postDetails(request, pk):
+    post = get_object_or_404(Post, post_id=pk)
+    
+    context = {
+        'post': post,
+    }
+
+    return render(request, 'post_detail.html', context)
 
 @api_view(['GET'])
 def postsList(request):
