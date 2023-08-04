@@ -6,7 +6,7 @@ from .forms import UserLoginForm, PostForm, UserProfileForm, CommentForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from .models import Post, Comment
+from .models import Post, Comment, ReplyComments
 from .serializers import PostSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,6 +16,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
 from .forms import CommentForm
+from django.urls import reverse
 
 def index(request):
     search_query = request.GET.get('q')
@@ -62,8 +63,15 @@ def delete_post(request, pk):
     if request.method == 'POST':
         if 'delete_button' in request.POST:
             posts = get_object_or_404(Post, post_id=pk)
+
+            # Delete all comments (parent and child) related to the post
+            comments = Comment.objects.filter(post_id=pk)
+            reply_comments = ReplyComments.objects.filter(post_id=pk)
+            comments.delete()
+            reply_comments.delete()
+
             posts.delete()
-            return redirect('index')
+            return redirect('index') 
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
@@ -103,28 +111,45 @@ def user_page(request):
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
+    comments = post.comment_set.all().order_by('-created')
+    reply_comments = ReplyComments.objects.all().order_by('-created')
 
     if request.method == 'POST':
         if request.user.is_authenticated:
-            content = request.POST['content']
-            Comment.objects.create(post=post, author=request.user, content=content)
+            if 'content' in request.POST:
+                content = request.POST['content']
+                Comment.objects.create(post=post, author=request.user, content=content)
+            if 'reply_content' in request.POST:
+                parent_comment_id = request.POST.get('parent_comment_id')
+                parent_comment = get_object_or_404(Comment, id=parent_comment_id)
+                content = request.POST.get('reply_content')
+                ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
 
     context = {
         'post': post,
+        'comments': comments,
+        'reply_comments': reply_comments
     }
 
-    return render(request, 'post_detail.html', context)                                                                                                 
-
+    return render(request, 'post_detail.html', context)
+                                                                                           
 def add_comment(request, pk):
     post = get_object_or_404(Post, post_id=pk)
 
     if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
+        if 'add_comment' in request.POST:
+            form = CommentForm(request.POST)
+            if form.is_valid():
+                comment = form.save(commit=False)
+                comment.post = post
+                comment.author = request.user
+                comment.save()
+                return redirect('postDetails', pk=pk)
+        elif 'add_reply' in request.POST: 
+            parent_comment_id = request.POST.get('parent_comment_id')
+            parent_comment = get_object_or_404(Comment, id=parent_comment_id)
+            content = request.POST.get('reply_content')
+            ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
             return redirect('postDetails', pk=pk)
     else:
         form = CommentForm()
@@ -135,6 +160,55 @@ def add_comment(request, pk):
     }
 
     return render(request, 'post_detail.html', context)
+
+def edit_comment(request, pk, comment_id):
+    post = get_object_or_404(Post, post_id=pk)
+
+    if request.method == 'POST':
+        if 'edit_comment' in request.POST:
+            comment = get_object_or_404(Comment, id=comment_id)
+            comment_id = request.POST.get('comment_id')
+            form = CommentForm(request.POST, instance=comment)
+            if form.is_valid():
+                form.save()
+                return redirect('postDetails', pk=pk)
+        if 'edit_reply_comment' in request.POST:
+            comment = get_object_or_404(ReplyComments, id=comment_id)
+            comment_id = request.POST.get('comment_id')
+            form = CommentForm(request.POST, instance=comment)
+            if form.is_valid():
+                form.save()
+                return redirect('postDetails', pk=pk)
+
+    else:
+        form = CommentForm(instance=comment)
+
+    context = {
+        'post': post,
+        'form': form,
+        'comment': comment,
+    }
+
+    return render(request, 'post_detail.html', context)
+
+def delete_comment(request, pk, comment_id):
+    if request.method == 'POST':
+        if 'delete_comment' in request.POST:
+            comment = get_object_or_404(Comment, id=comment_id)
+
+            # Delete child comments of the parent comment
+            child_comments = ReplyComments.objects.filter(parent_comment=comment)
+            child_comments.delete()
+
+            comment.delete()
+            return redirect(reverse ('postDetails', args=[pk]))
+        if 'delete_reply_comment' in request.POST:
+            comment = get_object_or_404(ReplyComments, id=comment_id)
+            comment.delete()
+            return redirect(reverse ('postDetails', args=[pk]))
+    else:
+        return HttpResponseBadRequest("Invalid request method.")
+
 
 @api_view(['GET'])
 def postsList(request):

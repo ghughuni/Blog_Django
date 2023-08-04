@@ -24,3 +24,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author.username} - {self.created}"
+    
+class ReplyComments(models.Model):
+    parent_comment=models.ForeignKey(Comment, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author.username} - {self.created}"

@@ -2,14 +2,14 @@
 {% block title %}post{% endblock %}
 
 {% block content %}
-<div class="col-md-8 m-auto p-2">
+<div class="col-md-8 m-auto p-2 mb-5">
     <!-- header of post -->
     <div class="mb-2 d-flex justify-content-between align-items-center p-2">
         <h1 class="fw-bolder mb-1 text-primary "><strong class="card-title fst-italic ">{{ post.title }}</strong></h1>
         <a href="{% url 'index' %}"><button type="button" class="btn-close" aria-label="Close"></button></a>
     </div>
     <!-- info of post -->
-    <div class="bg-light p-2">
+    <div class="bg-light p-2 mb-3">
         <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created }} | by {{ post.author.first_name }}
                 {{ post.author.last_name }}</small></div>
         <a href="#"><span class="badge rounded-pill bg-primary">
@@ -18,7 +18,7 @@
         </a>
     </div>
     <!-- body of post -->
-    <div class="overflow-auto">
+    <div class="d-flex row p-2">
         <div class="image mb-3"><img src="{{ post.image.url }}" alt="Post Image" class="card-img-top img-fluid"></div>
         <div class="body mb-3">
             {{ post.body }}
@@ -32,36 +32,213 @@
             <a href="{% url 'update_post' pk=post.post_id %}" class="btn btn-warning">Update</a>
             {% endif %}
         </div>
-        <!-- comment section -->
-        <section class="mb-5">
-            <div class="bg-light p-2">
-                <div class="header p-2">
-                    <!-- Comment form - only shown to authenticated users -->
-                    {% if user.is_authenticated %}
-                    <form action="{% url 'add_comment' post.post_id %}" method="post" class="mb-4">
-                        {% csrf_token %}
-                        <textarea class="form-control" name="content" rows="3" placeholder="add comment..."></textarea>
-                        <button type="submit" class="btn btn-primary mt-2">Add</button>
-                    </form>
-                    {% endif %}
-                </div>
-                <div class="body mb-3 p-2">
-                    <!-- List all comments -->
-                    {% for comment in post.comment_set.all %}
-                    <div class="d-flex mb-4">
+        <!-- assessment section -->
+        <div class="d-flex mb-3">
+            <button class="btn btn-light like-btn mx-2" data-comment-id="{{ comment.id }}">
+                <i class="bi bi-heart"></i> Like
+            </button>
+            <button class="btn btn-light unlike-btn mx-2" data-comment-id="{{ comment.id }}">
+                <i class="bi bi-heart-fill"></i> Unlike
+            </button>
+
+            <button class="btn btn-light share-btn mx-2" data-comment-id="{{ comment.id }}">
+                <i class="bi bi-share"></i> Share
+            </button>
+        </div>
+    </div>
+    <!-- comment section -->
+    <div class="container p-1 mb-2">
+            <div class="container-header p-1">
+                <!-- Comment form - only shown to authenticated users -->
+                {% if user.is_authenticated %}
+                <form action="{% url 'add_comment' post.post_id %}" method="post" class="mb-4">
+                    {% csrf_token %}
+                    <textarea class="form-control" name="content" rows="3" placeholder="add comment..."></textarea>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary m-2 " name="add_comment">Add</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            <div class="container-body mb-2">
+                <!-- List all comments -->
+                {% for comment in comments %}
+                <div class="container comment_container py-2 bg-light rounded-3">
+                    <!-- parent comments section -->
+                    <div class="d-flex mb-1">
                         <div class="flex-shrink-0"><img class="rounded-circle"
                                 src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..."></div>
                         <div class="ms-3">
-                            <div> <strong> {{ comment.author.username }} </strong> <small
-                                    class="text-muted fst-italic mb-2"> | {{ comment.created }} </small></div>
+                            <div class="d-flex ">
+                                <strong class="me-2">{{ comment.author.username }}</strong>
+                                <small class="text-muted fst-italic mb-2 me-2"> | {{ comment.created }} </small>
+                                {% if user.is_authenticated and user.id == post.author.id or user.id == comment.author_id%}
+                                <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
+                                    {% if user.is_authenticated and user.id == comment.author_id %}
+                                    <button class="btn btn-light text-start" data-bs-toggle="modal"
+                                        data-bs-target="#editCommentModal-{{ comment.id }}"
+                                        data-comment-id="{{ comment.id }}"><i class="bi bi-pencil"> </i> Edit
+                                        Comment
+                                    </button>
+
+                                    {% endif %}
+                                    {% if user.is_authenticated and user.id == post.author.id or user.id == comment.author_id%}
+                                    <form action="{% url 'delete_comment' post.post_id comment.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-light text-start"
+                                            name="delete_comment"><i class="bi bi-trash"> </i> Delete
+                                            Comment</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                <!-- Edit form for the comment -->
+                                <div class="modal fade" id="editCommentModal-{{ comment.id }}" tabindex="-1"
+                                    aria-labelledby="editCommentModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="editCommentForm_{{ comment.id }}" method="post"
+                                                    action="{% url 'edit_comment' pk=post.pk comment_id=comment.pk %}">
+                                                    {% csrf_token %}
+                                                    <textarea class="form-control" name="content"
+                                                        rows="3">{{ comment.content }}</textarea>
+                                                    <button type="submit" class="btn btn-primary mt-2"
+                                                        name="edit_comment">Update</button>
+                                                    <button type="button" class="btn btn-secondary mt-2"
+                                                        data-bs-dismiss="modal">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
                             {{ comment.content }}
                         </div>
                     </div>
+                    <div class="col-2 mb-3">
+                        {% if user.is_authenticated%}
+                        <div class="d-flex justify-content-end">
+                        <button class="btn btn-light reply-button my-2" data-bs-toggle="modal"
+                            data-bs-target="#replyCommentModal-{{ comment.id }}"
+                            data-comment-id="{{ comment.id }}"><i class="bi bi-reply"></i> Reply
+                        </button></div>
+                        {% endif %}
+                    </div>
+                    <!-- Reply comments section -->
+                    <!-- Reply comments section -->
+                    <!-- Reply comments section -->
+
+                    {% for r_comment in reply_comments %}
+                    {% if r_comment.parent_comment_id == comment.id %}
+                    <div class="container r_comment_container col-10 mb-3 border-start">
+                        <div class="d-flex col mb-1">
+                            <div class="flex-shrink-0"><img class="rounded-circle"
+                                    src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..."></div>
+                            <div class="ms-2">
+                                <div class="d-flex">
+                                    <strong class="me-1">{{ r_comment.author.username }}</strong>
+                                    <small class="text-muted fst-italic mb-2 me-1"> | {{ r_comment.created }}
+                                    </small>
+                                    {% if user.is_authenticated and user.id == post.author.id or user.id == r_comment.author_id%}
+                                    <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
+                                        {% if user.is_authenticated and user.id == r_comment.author_id %}
+                                        <button class="btn btn-light text-start" data-bs-toggle="modal"
+                                            data-bs-target="#editRCommentModal-{{ r_comment.id }}"
+                                            data-comment-id="{{ r_comment.id }}"><i class="bi bi-pencil"> </i> Edit
+                                            Comment
+                                        </button>
+                                        {% endif %}
+                                        {% if user.is_authenticated and user.id == post.author.id or user.id == r_comment.author_id%}
+                                        <form action="{% url 'delete_comment' post.post_id r_comment.id %}"
+                                            method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-light text-start"
+                                                name="delete_reply_comment"><i class="bi bi-trash"> </i> Delete
+                                                Comment</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Edit form for the Reply comment -->
+                                    <div class="modal fade" id="editRCommentModal-{{ r_comment.id }}" tabindex="-1"
+                                        aria-labelledby="editRCommentModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editRCommentModalLabel">Edit Comment
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form id="editCommentForm_{{ r_comment.id }}" method="post"
+                                                        action="{% url 'edit_comment' pk=post.pk comment_id=r_comment.pk %}">
+                                                        {% csrf_token %}
+                                                        <textarea class="form-control" name="content"
+                                                            rows="3">{{ r_comment.content }}</textarea>
+                                                        <button type="submit" class="btn btn-primary mt-2"
+                                                            name="edit_reply_comment">Update</button>
+                                                        <button type="button" class="btn btn-secondary mt-2"
+                                                            data-bs-dismiss="modal">Cancel</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {{ r_comment.content }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     {% endfor %}
+                    <!-- Reply comment form for the comment -->
+                    <div class="modal fade" id="replyCommentModal-{{ comment.id }}" tabindex="-1"
+                        aria-labelledby="replyCommentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="replyCommentModalLabel">Reply Comment</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post" action="{% url 'add_comment' post.post_id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                                        <textarea class="form-control" name="reply_content" rows="3"
+                                            placeholder="add reply..."></textarea>
+                                        <button type="submit" class="btn btn-primary mt-2" name="add_reply">Reply</button>
+                                        <button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reply comments section  end-->
+                    <!-- Reply comments section  end-->
+                    <!-- Reply comments section  end-->
                 </div>
             </div>
-        </section>
+            {% endfor %}
     </div>
 </div>
+<div class="container my-5 ">
 
+</div>
 {% endblock %}

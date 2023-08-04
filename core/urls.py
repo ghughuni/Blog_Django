@@ -15,7 +15,9 @@ from .views import (
     contact,
     index_by_tag,
     postDetails,
-    add_comment
+    add_comment,
+    edit_comment,
+    delete_comment
 )
 
 urlpatterns = [
@@ -32,4 +34,7 @@ urlpatterns = [
 	path('post-list/', postsList, name="post-list"),
     path('tag/<str:tag_slug>/', index_by_tag, name='index_by_tag'),
     path('post/<uuid:pk>/', add_comment, name='add_comment'),
+    path('post/<uuid:pk>/<str:comment_id>', edit_comment, name='edit_comment'),
+    path('post/<uuid:pk>/<str:comment_id>/', delete_comment, name='delete_comment'),
+
 ] + static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)
