@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
 from .models import Post, Comment, ReplyComments
-from .serializers import PostSerializer
+from .serializers import PostSerializer, ReplyCommentsSerializer, CommentSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
