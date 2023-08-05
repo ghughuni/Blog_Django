@@ -60,22 +60,23 @@
     </div>
   </div>
 </div>
-<!-- Tags Section -->
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-2 tags">
-      <h4>All tags</h4>
+
+  <div class="d-flex justify-content-center mt-4">
+    <!-- Tags Section -->
+    <div class="col-2 tags ">
+      <div>
+      <h4 class="text-center pb-3 mb-3 border-bottom"><strong>All tags </strong></h4>
       <ul>
         {% for tag in tags %}
         <li><a href="{% url 'index_by_tag' tag %}">{{ tag }}</a></li>
         {% endfor %}
-      </ul>
+      </ul></div>
     </div>
     <!-- Posts Section -->
-    <div class="col-md-8">
-      <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col-6 mt-2">
+      <div class="row row-cols-2 row-cols-lg-3 g-4">
         {% for post in posts %}
-        <div class="col-md-4 p-2">
+        <div class="col-lg-4 p-2">
           <div class="card shadow ">
             <img src="{{ post.image.url }}" alt="Post Image" class="card-img-top">
             <div class="card-body ">
@@ -87,7 +88,7 @@
               </ul>
               <!-- Button open post detail -->
               <a href="{% url 'postDetails' post.pk %}" class="text-decoration-none">
-                <h4><strong class="card-title fst-italic">{{ post.title }}</strong></h4>
+                <h5><strong class="card-title fst-italic">{{ post.title }}</strong></h5>
               </a>
               <p class="card-text">{{ post.body }}</p>
             </div>
@@ -99,11 +100,26 @@
         {% endfor %}
       </div>
     </div>
-    <!-- Right Section -->
-    <div class="col-md-2 tops">
-      <h4>Top Posts</h4>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam id dolor eu lacus lacinia vestibulum.</p>
+    <!-- Top_Post Section -->
+    <div class="col-2 tops">
+      <div>
+      <h4 class="text-center pb-3 mb-3 border-bottom"><strong>Top Post</strong></h4>
+      <div class="container">
+        {% for top_post in top_posts %}
+          <div class="card shadow mb-4">
+            <img src="{{ top_post.image.url }}" alt="Post Image" class="card-img-top">
+            <div class="card-body ">
+              <!-- Button open post detail -->
+              <a href="{% url 'postDetails' top_post.pk %}" class="text-decoration-none">
+                <h6><strong class="card-title fst-italic">{{ top_post.title }}</strong></h6>
+              </a>
+              <p class="card-text">{{ top_post.body }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
     </div>
   </div>
-</div>
+
 {% endblock %}

@@ -74,11 +74,12 @@ body {
   }
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 992px) {
   .tags{
-    display: none;
+    display: none !important;
   }
   .tops{
-    display: none;
+    display: none !important;
   }
+
 }

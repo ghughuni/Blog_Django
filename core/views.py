@@ -21,6 +21,7 @@ from django.http import HttpResponseForbidden
 
 def index(request):
     search_query = request.GET.get('q')
+    top_posts = Post.objects.order_by('-views')[:3]
     if search_query:
         posts = Post.objects.filter(
             Q(title__icontains=search_query) | Q(body__icontains=search_query)
@@ -32,6 +33,7 @@ def index(request):
     context = {
         'posts': posts,
         'tags': tags,
+        'top_posts': top_posts
     }
     return render(request, "index.html", context)
 
