@@ -11,7 +11,8 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     slug =models.SlugField()
-    
+    views = models.PositiveIntegerField(default=0)
+    viewed_ips = models.JSONField(default=list)
 
     def __str__(self):
         return self.title + '|' + str(self.author)

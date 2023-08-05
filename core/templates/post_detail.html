@@ -54,18 +54,20 @@
         <!-- assessment section -->
         <div class="d-flex mb-3">
             <button class="btn btn-light like-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="bi bi-heart"></i> Like
+                <i class="fa-regular fa-thumbs-up"></i> Like
+                <!-- <i class="fas fa-thumbs-up"></i> -->
             </button>
             <button class="btn btn-light unlike-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="bi bi-heart-fill"></i> Unlike
+                <i class="fa-regular fa-thumbs-down"></i> Unlike
+                <!-- <i class="fas fa-thumbs-down"></i> -->
             </button>
 
             <button class="btn btn-light share-btn mx-2" data-comment-id="{{ post.post_id }}">
                 <i class="bi bi-share"></i> Share
             </button>
-            <button class="btn btn-light like-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="bi bi-eye-fill"></i>
-            </button>
+            <div class="d-flex justify-content-center align-items-center mx-2" data-comment-id="{{ post.post_id }}">
+                <i class="bi bi-eye-fill px-2"></i><div class="total_view">{{ post.views }}</div>
+            </div>            
         </div>
     </div>
     <!-- comment section -->

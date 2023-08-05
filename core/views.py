@@ -17,6 +17,7 @@ from django.contrib import messages
 from django.db.models import Q
 from .forms import CommentForm
 from django.urls import reverse
+from django.http import HttpResponseForbidden
 
 def index(request):
     search_query = request.GET.get('q')
@@ -111,6 +112,11 @@ def user_page(request):
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
+    ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
+    if ip_address not in post.viewed_ips:
+        post.views += 1 
+        post.viewed_ips.append(ip_address)
+        post.save()
     comments = post.comment_set.all().order_by('-created')
     reply_comments = ReplyComments.objects.all().order_by('-created')
 
