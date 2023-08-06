@@ -169,6 +169,7 @@ def add_comment(request, pk):
 
     return render(request, 'post_detail.html', context)
 
+
 def edit_comment(request, pk, comment_id):
     post = get_object_or_404(Post, post_id=pk)
 
@@ -217,12 +218,50 @@ def delete_comment(request, pk, comment_id):
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
-
 @api_view(['GET'])
 def postsList(request):
-	posts = Post.objects.all()
-	serializer = PostSerializer(posts, many=True)
-	return Response(serializer.data)
+    posts = Post.objects.all()
+    posts_serializer = PostSerializer(posts, many=True)
+    return Response(posts_serializer.data)
+
+@api_view(['GET'])
+def commentsList(request):
+    comments = Comment.objects.all()
+    comments_serializer = CommentSerializer(comments, many=True)
+    return Response(comments_serializer.data)
+
+@api_view(['GET'])
+def replyCommentsList(request):
+    replyComments = ReplyComments.objects.all()
+    replyComments_serializer = ReplyCommentsSerializer(replyComments, many=True)
+    return Response(replyComments_serializer.data)
+
+@api_view(['GET'])
+def allDataList(request):
+    posts = Post.objects.all()
+
+    # Serialize the posts
+    posts_serializer = PostSerializer(posts, many=True)
+    data = posts_serializer.data
+
+    # Retrieve and serialize comments and replyComments
+    for post_data in data:
+        post_id = post_data['post_id']
+
+        # Retrieve comments for the current post
+        comments = Comment.objects.filter(post=post_id)
+        comments_serializer = CommentSerializer(comments, many=True)
+        post_data['comments'] = comments_serializer.data
+
+        # Retrieve replyComments and organize them under their parent comments
+        for comment_data in post_data['comments']:
+            comment_id = comment_data['id']
+            reply_comments = ReplyComments.objects.filter(parent_comment=comment_id)
+            reply_comments_serializer = ReplyCommentsSerializer(reply_comments, many=True)
+            comment_data['replyComments'] = reply_comments_serializer.data
+
+    return Response(data)
+
 
 @api_view(['GET'])
 def postDetail(request, pk):
