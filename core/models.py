@@ -13,6 +13,8 @@ class Post(models.Model):
     slug =models.SlugField()
     views = models.PositiveIntegerField(default=0)
     viewed_ips = models.JSONField(default=list)
+    total_likes = models.PositiveIntegerField(default=0)
+    total_unlikes = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title + '|' + str(self.author)
@@ -35,3 +37,9 @@ class ReplyComments(models.Model):
 
     def __str__(self):
         return f"{self.author.username} - {self.created}"
+
+class Likes_Unlikes(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    like = models.PositiveIntegerField(default=0)
+    unlike = models.PositiveIntegerField(default=0)

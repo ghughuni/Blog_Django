@@ -53,17 +53,34 @@
         </div>
         <!-- assessment section -->
         <div class="d-flex mb-3">
-            <button class="btn btn-light like-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="fa-regular fa-thumbs-up"></i> Like
-                <!-- <i class="fas fa-thumbs-up"></i> -->
-            </button>
-            <button class="btn btn-light unlike-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="fa-regular fa-thumbs-down"></i> Unlike
-                <!-- <i class="fas fa-thumbs-down"></i> -->
-            </button>
-
+            {% if user.is_authenticated %}
+                <form action="{% url 'like_unlike_post' post.post_id %}" method="post">
+                    {% csrf_token %}
+                <button class="btn btn-light like-btn mx-2" data-comment-id="{{ post.post_id }}" name="like-button">
+                    {% if user_has_liked == 1 %}
+                        <i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">{{ post.total_likes }}</span>
+                    {% else %}
+                        <i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">{{ post.total_likes }}</span>
+                    {% endif %}
+                </button>
+                <button class="btn btn-light unlike-btn mx-2" data-comment-id="{{ post.post_id }}" name="unlike-button">
+                    {% if user_has_unliked == 1 %}
+                        <i class="fa-solid fa-thumbs-down"></i> Unliked <span class="total-unlikes">{{ post.total_unlikes }}</span>
+                    {% else %}
+                        <i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">{{ post.total_unlikes }}</span>
+                    {% endif %}
+                </button>
+                </form>
+            {%else%}
+                <button class="btn btn-light like-btn mx-2" data-comment-id="{{ post.post_id }}">
+                    <i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">{{ post.total_likes }}</span>
+                </button>
+                <button class="btn btn-light unlike-btn mx-2" data-comment-id="{{ post.post_id }}">
+                    <i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">{{ post.total_unlikes }}</span>
+                </button>
+            {% endif %}
             <button class="btn btn-light share-btn mx-2" data-comment-id="{{ post.post_id }}">
-                <i class="bi bi-share"></i> Share
+                <a href="{% url 'share_facebook' %}" target="_blank"><i class="bi bi-share"></i> Share</a>
             </button>
             <div class="d-flex justify-content-center align-items-center mx-2" data-comment-id="{{ post.post_id }}">
                 <i class="bi bi-eye-fill px-2"></i><div class="total_view">{{ post.views }}</div>

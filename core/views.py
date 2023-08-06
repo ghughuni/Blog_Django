@@ -6,7 +6,7 @@ from .forms import UserLoginForm, PostForm, UserProfileForm, CommentForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from .models import Post, Comment, ReplyComments
+from .models import Post, Comment, ReplyComments, Likes_Unlikes
 from .serializers import PostSerializer, ReplyCommentsSerializer, CommentSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -112,9 +112,75 @@ def user_page(request):
     }
     return render(request, 'user_page.html', context)
 
+
+def ajaxPostDetail(request, pk):
+    post = get_object_or_404(Post, post_id=pk)
+    ip_address = request.META.get('REMOTE_ADDR')
+    comments = Comment.objects.filter(post=pk)
+    reply_comments = ReplyComments.objects.filter(post=pk)
+    data = {
+        'post': {
+            'title': post.title,
+            'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
+            'author': post.author.username,
+            'total_likes': post.total_likes,
+            'total_unlikes': post.total_unlikes,
+        },
+        'comments': [
+            {
+                'author': comment.author.username,
+                'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+                'content': comment.content,
+                'reply_comments': [
+                    {
+                        'author': r_comment.author.username,
+                        'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+                        'content': r_comment.content,
+                    }
+                    for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
+                ],
+            }
+            for comment in comments
+        ],
+    }
+    print(data)
+    return JsonResponse(data)
+
+
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
+    comments = Comment.objects.filter(post=pk)
+    reply_comments = ReplyComments.objects.filter(post=pk)
+    user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
+    user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
+    data = {
+        'post': {
+            'title': post.title,
+            'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
+            'author': post.author.username,
+            'total_likes': post.total_likes,
+            'total_unlikes': post.total_unlikes,
+        },
+        'comments': [
+            {
+                'author': comment.author.username,
+                'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+                'content': comment.content,
+                'reply_comments': [
+                    {
+                        'author': r_comment.author.username,
+                        'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+                        'content': r_comment.content,
+                    }
+                    for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
+                ],
+            }
+            for comment in comments
+        ],
+    }
+    # print(data)
+    
     if ip_address not in post.viewed_ips:
         post.views += 1 
         post.viewed_ips.append(ip_address)
@@ -134,13 +200,22 @@ def postDetails(request, pk):
                 ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
 
     context = {
+        'data':data,
         'post': post,
         'comments': comments,
-        'reply_comments': reply_comments
-    }
+        'reply_comments': reply_comments,
+        'user_has_liked': user_has_liked,
+        'user_has_unliked': user_has_unliked
 
+    }
+    # return JsonResponse(context)
     return render(request, 'post_detail.html', context)
-                                                                                           
+
+def share_on_facebook(request):
+    current_url = request.build_absolute_uri()
+    facebook_share_url = f'https://www.facebook.com/sharer/sharer.php?u={current_url}'
+    return redirect(facebook_share_url)
+                                                                                         
 def add_comment(request, pk):
     post = get_object_or_404(Post, post_id=pk)
 
@@ -265,9 +340,76 @@ def allDataList(request):
 
 @api_view(['GET'])
 def postDetail(request, pk):
-	posts = Post.objects.get(post_id=pk)
-	serializer = PostSerializer(posts, many=False)
-	return Response(serializer.data)
+    try:
+        post = Post.objects.get(post_id=pk)
+    except Post.DoesNotExist:
+        return HttpResponseBadRequest("Invalid request method.")
+
+    post_serializer = PostSerializer(post)
+    data = post_serializer.data
+
+    # Retrieve comments for the current post
+    comments = Comment.objects.filter(post=post)
+    comments_serializer = CommentSerializer(comments, many=True)
+    data['comments'] = comments_serializer.data
+
+    # Retrieve replyComments and organize them under their parent comments
+    for comment_data in data['comments']:
+        comment_id = comment_data['id']
+        reply_comments = ReplyComments.objects.filter(parent_comment=comment_id)
+        reply_comments_serializer = ReplyCommentsSerializer(reply_comments, many=True)
+        comment_data['replyComments'] = reply_comments_serializer.data
+
+    return Response(data)
+
+
+def like_unlike_post(request, pk):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            if request.user.is_authenticated:
+                    post = Post.objects.get(post_id=pk)
+                    user = request.user
+                    action, created = Likes_Unlikes.objects.get_or_create(post_id=post.post_id, author=user)
+                    if 'like-button' in request.POST:
+                        if action.like==0 and action.unlike==0:
+                            action.like = 1
+                            action.unlike = 0
+                            action.save()
+                            post.total_likes += 1
+                            post.save()
+                        elif action.like==0 and action.unlike==1:
+                            action.like = 1
+                            action.unlike = 0
+                            action.save()
+                            post.total_likes += 1
+                            post.total_unlikes -= 1
+                            post.save()
+                        else:
+                            pass
+                    elif 'unlike-button' in request.POST:
+                        if action.like==0 and action.unlike==0:
+                            action.like = 0
+                            action.unlike = 1
+                            action.save()
+                            post.total_unlikes += 1
+                            post.save()
+                        elif action.like==1 and action.unlike==0:
+                            action.like = 0
+                            action.unlike = 1
+                            action.save()
+                            post.total_likes -= 1
+                            post.total_unlikes += 1
+                            post.save()
+                        else:
+                            pass
+
+                    return redirect(postDetails, pk=pk)
+        else:
+            return JsonResponse({'error': 'User not authenticated'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'})
+
+
 
 def contact(request):
     return render(request, 'contact.html')

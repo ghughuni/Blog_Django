@@ -10,6 +10,7 @@ urlpatterns = [
     path('update/<str:pk>/', views.update_post, name='update_post'),
     path('user_page/', views.user_page, name='user_page'),
     path('post/<str:pk>/', views.postDetails, name='postDetails'),
+    path('api-post/<str:pk>/', views.postDetail, name='postDetail'),
     path('login/', views.loginView, name='login'),
     path('contact/', views.contact, name='contact'),
     path('register/', views.register, name='register'),
@@ -22,5 +23,7 @@ urlpatterns = [
     path('post/<uuid:pk>/', views.add_comment, name='add_comment'),
     path('post/<uuid:pk>/<str:comment_id>', views.edit_comment, name='edit_comment'),
     path('post/<uuid:pk>/<str:comment_id>/', views.delete_comment, name='delete_comment'),
+    path('like_unlike_post/<uuid:pk>', views.like_unlike_post, name='like_unlike_post'),
+    path('share/facebook/', views.share_on_facebook, name='share_facebook'),
 
 ] + static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)
