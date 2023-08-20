@@ -106,8 +106,12 @@
                 <div class="container comment_container py-2 bg-light rounded-3">
                     <!-- parent comments section -->
                     <div class="d-flex mb-1">
-                        <div class="flex-shrink-0"><img class="rounded-circle"
-                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..."></div>
+                        {% for u in users %}
+                            {% if u.author_id == comment.author_id%}
+                                <div class="flex-shrink-0"><img class="rounded-circle mx-auto d-block" 
+                                    src="{{ u.profile_images.url }}" alt="..." width="50" height="50"></div>
+                            {% endif %}
+                        {% endfor %}
                         <div class="ms-3">
                             <div class="d-flex ">
                                 <strong class="me-2">{{ comment.author.username }}</strong>
@@ -187,7 +191,7 @@
                     <div class="col-2 mb-3">
                         {% if user.is_authenticated%}
                         <div class="d-flex justify-content-end">
-                        <button class="btn btn-light reply-button my-2" data-bs-toggle="modal"
+                        <button class="btn btn-light reply-button my-2 text-muted" data-bs-toggle="modal"
                             data-bs-target="#replyCommentModal-{{ comment.id }}"
                             data-comment-id="{{ comment.id }}"><i class="bi bi-reply"></i> Reply
                         </button></div>
@@ -198,8 +202,12 @@
                     {% if r_comment.parent_comment_id == comment.id %}
                     <div class="container r_comment_container col-10 mb-3 border-start">
                         <div class="d-flex col mb-1">
-                            <div class="flex-shrink-0"><img class="rounded-circle"
-                                    src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..."></div>
+                            {% for u in users %}
+                            {% if u.author_id == r_comment.author_id%}
+                                <div class="flex-shrink-0"><img class="rounded-circle mx-auto d-block"
+                                    src="{{ u.profile_images.url }}" alt="..." width="50" height="50"></div>
+                            {% endif %}
+                            {% endfor %}
                             <div class="ms-2">
                                 <div class="d-flex">
                                     <strong class="me-1">{{ r_comment.author.username }}</strong>

@@ -151,6 +151,7 @@ def postDetails(request, pk):
         profile_user=User_profiles.objects.get(author=request.user)
     else:
         profile_user=None
+    users=User_profiles.objects.all()
     reply_comments = ReplyComments.objects.filter(post=pk)
     try:
         user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
@@ -210,6 +211,7 @@ def postDetails(request, pk):
         'user_has_liked': user_has_liked,
         'user_has_unliked': user_has_unliked,
         'profile_user': profile_user,
+        'users':users
     }
 
     return render(request, 'post_detail.html', context)
