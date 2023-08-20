@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
-from .forms import UserLoginForm, PostForm, UserProfileForm, CommentForm
+from .forms import UserLoginForm, PostForm, UserProfileForm, CommentForm, UserProfileAddForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from .models import Post, Comment, ReplyComments, Likes_Unlikes
+from .models import Post, Comment, ReplyComments, Likes_Unlikes, User_profiles
 from .serializers import PostSerializer, ReplyCommentsSerializer, CommentSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -15,13 +15,15 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
-from .forms import CommentForm
-from django.urls import reverse
 from django.http import HttpResponseForbidden
 
 def index(request):
     search_query = request.GET.get('q')
     top_posts = Post.objects.order_by('-views')[:3]
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
     if search_query:
         posts = Post.objects.filter(
             Q(title__icontains=search_query) | Q(body__icontains=search_query)
@@ -33,22 +35,32 @@ def index(request):
     context = {
         'posts': posts,
         'tags': tags,
-        'top_posts': top_posts
+        'top_posts': top_posts,
+        'profile_user': profile_user,
     }
     return render(request, "index.html", context)
 
 def index_by_tag(request, tag_slug):
     posts = Post.objects.filter(slug=tag_slug).order_by('-created')
     tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
     
     context = {
         'posts': posts,
         'tags': tags,
+        'profile_user': profile_user,
     }
 
     return render(request, "index.html", context)
 
 def add_post(request):
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -59,7 +71,10 @@ def add_post(request):
     else:
         form = PostForm()
     
-    context = {'form': form}
+    context = {
+        'form': form,
+        'profile_user': profile_user,
+        }
     return render(request, 'add_post.html', context)
 
 def delete_post(request, pk):
@@ -92,68 +107,57 @@ def update_post(request, pk):
     return render(request, 'update_post.html', {'form': form, 'post': post})
 
 @login_required
-def user_page(request):
+def user_profile(request):
     user = request.user
-    posts = Post.objects.filter(author=user).order_by('-created')
-
+    profile_user, created = User_profiles.objects.get_or_create(author=user)
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user)
-        if form.is_valid():
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        profileaddform = UserProfileAddForm(request.POST, request.FILES, instance=profile_user)
+        if form.is_valid() and profileaddform.is_valid():
             form.save()
-            return redirect('user_page')
+            profileaddform.save()
+            return redirect('user_profile')
 
     else:
         form = UserProfileForm(instance=user)
+        profileaddform = UserProfileAddForm(instance=profile_user)
+    
+    context = {
+        'user': user,
+        'profile_user': profile_user,
+        'form': form,
+        'profileaddform': profileaddform
+    }
+    return render(request, 'user_profile.html', context)
 
+
+@login_required
+def user_room(request):
+    user = request.user
+    profile_user=User_profiles.objects.get(author=request.user)
+    posts = Post.objects.filter(author=user).order_by('-created')
     context = {
         'user': user,
         'posts': posts,
-        'form': form,
+        'profile_user': profile_user,
     }
-    return render(request, 'user_page.html', context)
-
-
-def ajaxPostDetail(request, pk):
-    post = get_object_or_404(Post, post_id=pk)
-    ip_address = request.META.get('REMOTE_ADDR')
-    comments = Comment.objects.filter(post=pk)
-    reply_comments = ReplyComments.objects.filter(post=pk)
-    data = {
-        'post': {
-            'title': post.title,
-            'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
-            'author': post.author.username,
-            'total_likes': post.total_likes,
-            'total_unlikes': post.total_unlikes,
-        },
-        'comments': [
-            {
-                'author': comment.author.username,
-                'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-                'content': comment.content,
-                'reply_comments': [
-                    {
-                        'author': r_comment.author.username,
-                        'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-                        'content': r_comment.content,
-                    }
-                    for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
-                ],
-            }
-            for comment in comments
-        ],
-    }
-    print(data)
-    return JsonResponse(data)
-
+    return render(request, 'user_room.html', context)
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
     comments = Comment.objects.filter(post=pk)
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
     reply_comments = ReplyComments.objects.filter(post=pk)
-    user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
-    user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
+    try:
+        user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
+        user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
+    except:
+        user_has_liked=0
+        user_has_unliked=0
     data = {
         'post': {
             'title': post.title,
@@ -179,7 +183,6 @@ def postDetails(request, pk):
             for comment in comments
         ],
     }
-    # print(data)
     
     if ip_address not in post.viewed_ips:
         post.views += 1 
@@ -200,15 +203,15 @@ def postDetails(request, pk):
                 ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
 
     context = {
-        'data':data,
+        'data':JsonResponse(data),
         'post': post,
         'comments': comments,
         'reply_comments': reply_comments,
         'user_has_liked': user_has_liked,
-        'user_has_unliked': user_has_unliked
-
+        'user_has_unliked': user_has_unliked,
+        'profile_user': profile_user,
     }
-    # return JsonResponse(context)
+
     return render(request, 'post_detail.html', context)
 
 def share_on_facebook(request):
@@ -285,11 +288,11 @@ def delete_comment(request, pk, comment_id):
             child_comments.delete()
 
             comment.delete()
-            return redirect(reverse ('postDetails', args=[pk]))
+            return redirect('postDetails', pk=pk)
         if 'delete_reply_comment' in request.POST:
             comment = get_object_or_404(ReplyComments, id=comment_id)
             comment.delete()
-            return redirect(reverse ('postDetails', args=[pk]))
+            return redirect('postDetails', pk=pk)
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
@@ -412,7 +415,15 @@ def like_unlike_post(request, pk):
 
 
 def contact(request):
-    return render(request, 'contact.html')
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
+    context = {
+        'profile_user': profile_user,
+        }
+
+    return render(request, 'contact.html', context)
 
 def register(request):
     title = 'Create an account'

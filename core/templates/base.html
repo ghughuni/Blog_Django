@@ -1,6 +1,6 @@
-{% load static %}
 <!DOCTYPE html>
-<html>
+{% load static %}
+<html lang="en">
 
 <head>
   <title>{% block title %}{% endblock %}</title>
@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.5.0/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <!-- <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,10 +17,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital@0;1&family=Roboto:ital@1&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="{% static 'style.css' %}">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -45,33 +44,77 @@
             <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'user_page' %}">My Room</a>
+            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'user_room' %}">My Room</a>
           </li>
           {% endif %}
           <li class="nav-item">
             <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'contact' %}">Contact</a>
           </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item dropdown pe-3">
+            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <img src="{{ profile_user.profile_images.url }}" alt="Profile" width="30" height="30"
+                class="rounded-circle"></i>
+              <span class="d-none d-md-block dropdown-toggle ps-2">{{user}}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+              <li class="dropdown-header">
+                <h6>{{user.first_name}} {{user.last_name}}</h6>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'user_profile' %}">
+                  <i class="bi bi-person pe-2"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+                  <i class="bi bi-gear pe-2"></i>
+                  <span>Account Settings</span>
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'user_profile' %}">
+                  <i class="bi bi-question-circle pe-2"></i>
+                  <span>Need Help?</span>
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_view' %}">
+                  <i class="bi bi-box-arrow-right pe-2"></i>
+                  <span>Sign Out</span>
+                </a>
+              </li>
+
+            </ul><!-- End Profile Dropdown Items -->
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a href="{% url 'register' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
+                type="button"><i class="bi bi-person-circle ">
+                </i>Register</button></a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
+                type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
+          </li>
+          {% endif %}
         </ul>
-        {% if user.is_authenticated %}
-        <div class="d-flex justify-content-end">
-          <a href="{% url 'user_page' %}">
-            <button class="btn btn-outline-secondary text-white rounded-pill" type="button">
-              <i class="bi bi-person-circle"></i> {{user}}
-            </button>
-          </a>
-          <a href="{% url 'logout_view' %}">
-            <i class="bi bi-box-arrow-in-right fs-4 text-white ms-4 me-5" title="Log Out"></i>
-          </a>
-        </div>
-        {% else %}
-        <div class="d-flex justify-content-end">
-          <a href="{% url 'register' %}"><button class="btn btn-outline-info rounded-pill me-2" title="LogIn"
-              type="button"><i class="bi bi-person-circle ">
-              </i>Register</button></a>
-          <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill me-5" title="LogIn"
-              type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
-        </div>
-        {% endif %}
       </div>
     </div>
   </nav>
@@ -86,7 +129,7 @@
   </div>
   <!-- Main Section -->
   {% endif %}
-  <div class="d-flex flex-wrap">
+  <div class="">
     {% block content %}
 
     {% endblock %}
@@ -110,7 +153,6 @@
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.5.0/js/bootstrap.bundle.min.js"></script>
-  <script src="{% static 'js/bootstrap.min.js' %}"></script>
   <script src="{% static 'main.js' %}"></script>
 
 </body>
