@@ -26,5 +26,6 @@ urlpatterns = [
     path('post/<uuid:pk>/<str:comment_id>/', views.delete_comment, name='delete_comment'),
     path('like_unlike_post/<uuid:pk>', views.like_unlike_post, name='like_unlike_post'),
     path('share/facebook/', views.share_on_facebook, name='share_facebook'),
+    path('Not_Found/', views.Not_Found, name='Not_Found'),
 
 ] + static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)

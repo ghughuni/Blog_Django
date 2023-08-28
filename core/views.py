@@ -56,11 +56,9 @@ def index_by_tag(request, tag_slug):
 
     return render(request, "index.html", context)
 
+@login_required
 def add_post(request):
-    if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
-    else:
-        profile_user=None
+    profile_user=User_profiles.objects.get(author=request.user)
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -77,6 +75,7 @@ def add_post(request):
         }
     return render(request, 'add_post.html', context)
 
+@login_required
 def delete_post(request, pk):
     if request.method == 'POST':
         if 'delete_button' in request.POST:
@@ -93,9 +92,10 @@ def delete_post(request, pk):
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
+@login_required
 def update_post(request, pk):
     post = get_object_or_404(Post, post_id=pk)
-
+    profile_user=User_profiles.objects.get(author=request.user)
     if request.method == 'POST':
             form = PostForm(request.POST, request.FILES, instance=post)
             form.instance.author = post.author
@@ -104,7 +104,12 @@ def update_post(request, pk):
                 return redirect('index')
     else:
         form = PostForm(instance=post)
-    return render(request, 'update_post.html', {'form': form, 'post': post})
+    context = {
+        'form': form,
+        'post': post,
+        'profile_user': profile_user,
+        }
+    return render(request, 'update_post.html', context)
 
 @login_required
 def user_profile(request):
@@ -220,7 +225,8 @@ def share_on_facebook(request):
     current_url = request.build_absolute_uri()
     facebook_share_url = f'https://www.facebook.com/sharer/sharer.php?u={current_url}'
     return redirect(facebook_share_url)
-                                                                                         
+
+@login_required                                                                                      
 def add_comment(request, pk):
     post = get_object_or_404(Post, post_id=pk)
 
@@ -249,7 +255,7 @@ def add_comment(request, pk):
 
     return render(request, 'post_detail.html', context)
 
-
+@login_required
 def edit_comment(request, pk, comment_id):
     post = get_object_or_404(Post, post_id=pk)
 
@@ -280,6 +286,7 @@ def edit_comment(request, pk, comment_id):
 
     return render(request, 'post_detail.html', context)
 
+@login_required
 def delete_comment(request, pk, comment_id):
     if request.method == 'POST':
         if 'delete_comment' in request.POST:
@@ -367,50 +374,46 @@ def postDetail(request, pk):
 
     return Response(data)
 
-
+@login_required
 def like_unlike_post(request, pk):
     if request.method == 'POST':
-        if request.user.is_authenticated:
-            if request.user.is_authenticated:
-                    post = Post.objects.get(post_id=pk)
-                    user = request.user
-                    action, created = Likes_Unlikes.objects.get_or_create(post_id=post.post_id, author=user)
-                    if 'like-button' in request.POST:
-                        if action.like==0 and action.unlike==0:
-                            action.like = 1
-                            action.unlike = 0
-                            action.save()
-                            post.total_likes += 1
-                            post.save()
-                        elif action.like==0 and action.unlike==1:
-                            action.like = 1
-                            action.unlike = 0
-                            action.save()
-                            post.total_likes += 1
-                            post.total_unlikes -= 1
-                            post.save()
-                        else:
-                            pass
-                    elif 'unlike-button' in request.POST:
-                        if action.like==0 and action.unlike==0:
-                            action.like = 0
-                            action.unlike = 1
-                            action.save()
-                            post.total_unlikes += 1
-                            post.save()
-                        elif action.like==1 and action.unlike==0:
-                            action.like = 0
-                            action.unlike = 1
-                            action.save()
-                            post.total_likes -= 1
-                            post.total_unlikes += 1
-                            post.save()
-                        else:
-                            pass
+        post = Post.objects.get(post_id=pk)
+        user = request.user
+        action, created = Likes_Unlikes.objects.get_or_create(post_id=post.post_id, author=user)
+        if 'like-button' in request.POST:
+            if action.like==0 and action.unlike==0:
+                action.like = 1
+                action.unlike = 0
+                action.save()
+                post.total_likes += 1
+                post.save()
+            elif action.like==0 and action.unlike==1:
+                action.like = 1
+                action.unlike = 0
+                action.save()
+                post.total_likes += 1
+                post.total_unlikes -= 1
+                post.save()
+            else:
+                pass
+        elif 'unlike-button' in request.POST:
+            if action.like==0 and action.unlike==0:
+                action.like = 0
+                action.unlike = 1
+                action.save()
+                post.total_unlikes += 1
+                post.save()
+            elif action.like==1 and action.unlike==0:
+                action.like = 0
+                action.unlike = 1
+                action.save()
+                post.total_likes -= 1
+                post.total_unlikes += 1
+                post.save()
+            else:
+                pass
 
-                    return redirect(postDetails, pk=pk)
-        else:
-            return JsonResponse({'error': 'User not authenticated'})
+        return redirect(postDetails, pk=pk)
     else:
         return JsonResponse({'error': 'Invalid request method'})
 
@@ -472,3 +475,6 @@ def loginView(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+def Not_Found(request):
+    return render(request, '404.html')
