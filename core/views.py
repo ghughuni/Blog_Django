@@ -478,3 +478,10 @@ def logout_view(request):
 
 def Not_Found(request):
     return render(request, '404.html')
+
+def page_faq(request):
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
+    return render(request, 'faq.html',{'profile_user': profile_user})
