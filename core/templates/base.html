@@ -58,8 +58,8 @@
             <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown"
               aria-expanded="false">
               <img src="{{ profile_user.profile_images.url }}" alt="Profile" width="30" height="30"
-                class="rounded-circle"></i>
-              <span class="d-none d-md-block dropdown-toggle ps-2">{{user}}</span>
+                class="rounded-circle" id="auth_user_img"></i>
+              <span class="d-none d-md-block dropdown-toggle ps-2" id="auth_user" auth-user-id="{{user.id}}">{{user}}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
               <li class="dropdown-header">

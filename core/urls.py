@@ -4,6 +4,9 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
+    
+    path("post_ajax/<str:pk>/", views.post_detail_ajax, name="post_detail_ajax"),
+
     path("", views.index, name="index"),
     path("add_post", views.add_post, name="add_post"),
     path('delete_post/<str:pk>/', views.delete_post, name='delete_post'),
@@ -12,6 +15,10 @@ urlpatterns = [
     path('user_room/', views.user_room, name='user_room'),
     path('post/<str:pk>/', views.postDetails, name='postDetails'),
     path('api-post/<str:pk>/', views.postDetail, name='postDetail'),
+    path('api-comments/create/', views.create_comment, name='create_comment'),
+    path('api-r-comments/create/', views.create_reply_comment, name='create_reply_comment'),
+    path('api-comments/delete/<str:pk>/', views.delete_comments, name='delete_comments'),
+    path('api-r-comments/delete/<str:pk>/', views.delete_reply_comments, name='delete_reply_comments'),
     path('login/', views.loginView, name='login'),
     path('contact/', views.contact, name='contact'),
     path('register/', views.register, name='register'),
@@ -19,11 +26,10 @@ urlpatterns = [
 	path('api-posts/', views.postsList, name="postsList"),
     path('api-comments/', views.commentsList, name="commentsList"),
     path('api-replyComments/', views.replyCommentsList, name="replyCommentsList"),
-    path('api-all-data/', views.allDataList, name="allDataList"),
     path('tag/<str:tag_slug>/', views.index_by_tag, name='index_by_tag'),
-    path('post/<uuid:pk>/', views.add_comment, name='add_comment'),
-    path('post/<uuid:pk>/<str:comment_id>', views.edit_comment, name='edit_comment'),
-    path('post/<uuid:pk>/<str:comment_id>/', views.delete_comment, name='delete_comment'),
+    # path('post/<uuid:pk>/', views.add_comment, name='add_comment'),
+    # path('post/<uuid:pk>/<str:comment_id>', views.edit_comment, name='edit_comment'),
+    # path('post/<uuid:pk>/<str:comment_id>/', views.delete_comment, name='delete_comment'),
     path('like_unlike_post/<uuid:pk>', views.like_unlike_post, name='like_unlike_post'),
     path('share/facebook/', views.share_on_facebook, name='share_facebook'),
     path('Not_Found/', views.Not_Found, name='Not_Found'),
