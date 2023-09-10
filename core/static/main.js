@@ -36,7 +36,7 @@ function show_details_post() {
   fetch(postsUrl)
     .then((resp) => resp.json())
     .then(function (data) {
-      console.log("Data:", data);
+      // console.log("Data:", data);
       if (data.user_authenticated){
         if (data.user_has_liked === 1){
           likes=`<i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">${data.total_likes}</span>`
@@ -193,9 +193,9 @@ function show_details_post() {
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form id="editCommentForm_${data.comments[i].replyComments[j].id}">
-                                                <textarea class="form-control" name="content" rows="3">${data.comments[i].replyComments[j].content}</textarea>
-                                                <button type="submit" class="btn btn-primary mt-2" name="edit_reply_comment">Update</button>
+                                            <form id="editRCommentForm_${data.comments[i].replyComments[j].id}">
+                                                <textarea id="replyCommentTextArea_${data.comments[i].replyComments[j].id}" class="form-control" parent_comment_id="${data.comments[i].id}" rows="3">${data.comments[i].replyComments[j].content}</textarea>
+                                                <button type="submit" class="btn btn-primary mt-2" id="update_reply_comment" value="${data.comments[i].replyComments[j].id}">Update</button>
                                                 <button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal">Cancel</button>
                                             </form>
                                         </div>
@@ -203,9 +203,9 @@ function show_details_post() {
                                 </div>
                             </div>
                         </div>
-                        ${data.comments[i].replyComments[j].content}
+                        <div id="reply-comment-${data.comments[i].replyComments[j].id}">${data.comments[i].replyComments[j].content}</div>
                     </div>
-                </div>`;
+                </div><br>`;
           }
         } else {
           replies = ``;
@@ -255,12 +255,11 @@ function show_details_post() {
                                             aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <form id="editCommentForm_${data.comments[i].id}" method="post"
-                                            
-                                            <textarea class="form-control" name="content"
+                                        <form id="editCommentForm_${data.comments[i].id}">
+                                            <textarea class="form-control" name="update_content" id="commentTextArea_${data.comments[i].id}"
                                                 rows="3">${data.comments[i].content}</textarea>
                                             <button type="submit" class="btn btn-primary mt-2"
-                                                name="edit_comment" id="edit_comment">Update</button>
+                                                name="edit_comment" id="update_comment" value="${data.comments[i].id}">Update</button>
                                             <button type="button" class="btn btn-secondary mt-2"
                                                 data-bs-dismiss="modal">Cancel</button>
                                         </form>
@@ -270,9 +269,10 @@ function show_details_post() {
                         </div>
                        
                     </div>
-                    ${data.comments[i].content}
+                    <div id="comment-${data.comments[i].id}">${data.comments[i].content}</div>
                 </div>
             </div>
+            <!-- Reply button -->
             ${reply_button}
             <!-- Reply comments section -->
             <div class="container r_comment_container col-10 mb-3 border-start" id="replies_comment_box-${data.comments[i].id}" value="${data.comments[i].id}">
@@ -338,11 +338,31 @@ function show_details_post() {
           deleteReplyComment(replyCommentId);
         });
       });
+      
+      // call UPDATE comment function
+      const updateCommentButtons = document.querySelectorAll('#update_comment');
+      updateCommentButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+          const commentId = button.getAttribute('value');
+          updateComment(commentId)
+        });
+      });
+      
+      // call UPDATE reply comment function
+      const updateReplyCommentButtons = document.querySelectorAll('#update_reply_comment');
+      updateReplyCommentButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+          const replyCommentId = button.getAttribute('value');
+          updateReplyComment(replyCommentId)
+        });
+      });
     });
 }
 
 
-// Create comment
+// CREATE comment
 commentForm.addEventListener("submit", function (e) {
   e.preventDefault();
   const post_id = commentForm.dataset.postId;
@@ -376,21 +396,20 @@ commentForm.addEventListener("submit", function (e) {
                   <div class="d-flex ">
                       <strong class="me-2">${author}</strong>
                       <small class="text-muted fst-italic mb-2 me-2"> | ${data.created} </small>
-                      <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"
-                      aria-expanded="false">
-                      <i class="bi bi-three-dots-vertical"></i>
-                  </button>
+                      <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
                       <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
-                      <button class="btn btn-light text-start" data-bs-toggle="modal"
-                      data-bs-target="#editCommentModal-${data.id}"
-                      data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
-                      Comment
-                  </button>
-                  <form>                  
-                  <button type="button" class="btn btn-light text-start" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
-                      <i class="bi bi-trash"></i> Delete Comment
-                  </button>
-              </form>
+                        <button class="btn btn-light text-start" data-bs-toggle="modal"
+                          data-bs-target="#editCommentModal-${data.id}"
+                          data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
+                          Comment
+                        </button>
+                        <form>                  
+                          <button type="button" class="btn btn-light text-start" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
+                              <i class="bi bi-trash"></i> Delete Comment
+                          </button>
+                        </form>
                       </div>
                       <!-- Confirmation Modal for Delete Comment -->
                       <div class="modal fade" id="confirmDeleteModal-${data.id}" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -402,7 +421,6 @@ commentForm.addEventListener("submit", function (e) {
                                   <div class="modal-footer">
                                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                       <form >
-                                         
                                           <button type="submit" class="btn btn-danger"
                                               name="delete_comment" id="delete_comment"><i class="bi bi-trash"> </i> Delete
                                               </button>
@@ -422,8 +440,7 @@ commentForm.addEventListener("submit", function (e) {
                                           aria-label="Close"></button>
                                   </div>
                                   <div class="modal-body">
-                                      <form id="editCommentForm_${data.id}" method="post"
-                                          
+                                      <form id="editCommentForm_${data.id}" method="post">
                                           <textarea class="form-control" name="content"
                                               rows="3">${content}</textarea>
                                           <button type="submit" class="btn btn-primary mt-2"
@@ -435,20 +452,22 @@ commentForm.addEventListener("submit", function (e) {
                               </div>
                           </div>
                       </div>
-                     
                   </div>
-                  ${content}
+                <div id="comment-${data.id}">${content}</div>
               </div>
           </div>
+          <!-- Reply button -->      
           <div class="col-2 mb-3">
-                
             <div class="d-flex justify-content-end">
-            <button class="btn btn-light reply-button my-2 text-muted" data-bs-toggle="modal"
-                data-bs-target="#replyCommentModal-${data.id}"
-                data-comment-id="${data.id}"><i class="bi bi-reply"></i> Reply
-            </button></div>
-            
-        </div>
+              <button class="btn btn-light reply-button my-2 text-muted" data-bs-toggle="modal"
+                  data-bs-target="#replyCommentModal-${data.id}"
+                  data-comment-id="${data.id}"><i class="bi bi-reply"></i> Reply
+              </button>
+            </div>
+          </div>
+          <!-- Reply comments section -->
+          <div class="container r_comment_container col-10 mb-3 border-start" id="replies_comment_box-${data.id}" value="${data.id}">
+          </div>
       </div>
             `;
 
@@ -460,7 +479,7 @@ commentForm.addEventListener("submit", function (e) {
     });
 });
 
-// Create Reply of comment
+// CREATE Reply of comment
 function create_reply(parent_comment_id){
     const replycommentsBox = document.getElementById(`replies_comment_box-${parent_comment_id}`);
     const formId = `reply-comment-form-${parent_comment_id}`;
@@ -491,10 +510,21 @@ function create_reply(parent_comment_id){
                               <strong class="me-1">${author}</strong>
                               <small class="text-muted fst-italic mb-2 me-1"> | ${data.created}
                               </small>
-                              ${r_three_dot_button}
+                              <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false" data-comment-id="${data.id}">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                              </button>
                               <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
-                                  ${r_edit_comment_button}
-                                  ${r_delete_comment_form}
+                                  <button class="btn btn-light text-start" data-bs-toggle="modal"
+                                    data-bs-target="#editRCommentModal-${data.id}"
+                                    data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
+                                  Comment
+                                  </button>
+                                  <form >                  
+                                        <button type="button" class="btn btn-light text-start delete_comment_form" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
+                                            <i class="bi bi-trash"></i> Delete Comment
+                                        </button>
+                                    </form>
                               </div>
                               <!-- Confirmation Modal for Delete reply Comment -->
                               <div class="modal fade" id="confirmDeleteModal-${data.id}" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -525,11 +555,11 @@ function create_reply(parent_comment_id){
                                                   aria-label="Close"></button>
                                           </div>
                                           <div class="modal-body">
-                                              <form id="editCommentForm_${data.id}">
-                                                  <textarea class="form-control" name="content"
-                                                      rows="3">${content}</textarea>
+                                              <form id="editRCommentForm_${data.id}">
+                                                  <textarea id="replyCommentTextArea_${data.id}" class="form-control" name="content"
+                                                      rows="3" parent_comment_id="${parent_comment_id}">${content}</textarea>
                                                   <button type="submit" class="btn btn-primary mt-2"
-                                                      name="edit_reply_comment">Update</button>
+                                                      name="edit_reply_comment" id="update_reply_comment" value="${data.id}">Update</button>
                                                   <button type="button" class="btn btn-secondary mt-2"
                                                       data-bs-dismiss="modal">Cancel</button>
                                               </form>
@@ -538,7 +568,7 @@ function create_reply(parent_comment_id){
                                   </div>
                               </div>
                           </div>
-                          ${content}
+                          <div id="reply-comment-${data.id}">${content}</div>
                       </div>
                   </div><br>
                     `;
@@ -643,6 +673,104 @@ function deleteReplyComment(replyCommentId) {
       console.error('Error deleting reply comment:', error);
     });
 }
+
+// UPDATE comment
+function updateComment(commentId) {
+  const url = `/api-comment/update/${commentId}/`;
+  const post_id = commentForm.dataset.postId;
+  const author = document.getElementById("auth_user").textContent; 
+  const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
+  const author_img = document.getElementById("auth_user_img").getAttribute("src");
+  const newContent = document.getElementById(`commentTextArea_${commentId}`).value
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({ "content": newContent, "post": post_id, "author": authorID }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    // console.log(data)
+    const commentElement = document.getElementById(`comment-${commentId}`).textContent;
+    // Check if newContent is not empty
+    if (newContent !== '') {
+          // Update the comment element's text content
+          commentElement.textContent = newContent;
+    } else {
+          console.log("New content is empty");
+    }
+        
+      // Close the modal
+      const modalId = `#editCommentModal-${commentId}`;
+      const modal = document.querySelector(modalId);
+      if (modal) {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.hide();
+      }
+
+      // Remove the modal backdrop
+      const modalBackdrop = document.querySelector('.modal-backdrop');
+      if (modalBackdrop) {
+        modalBackdrop.remove();
+      }
+      console.log('Comment updated successfully');
+      show_details_post()
+    })
+  .catch((error) => {
+      console.error('Error updating comment:', error);
+    })
+};
+
+// UPDATE Reply comment
+function updateReplyComment(replyCommentId) {
+  const url = `/api-r-comment/update/${replyCommentId}/`;
+  const parent_comment_id = document.getElementById(`replyCommentTextArea_${replyCommentId}`).getAttribute("parent_comment_id")
+  const post_id = commentForm.dataset.postId;
+  const author = document.getElementById("auth_user").textContent; 
+  const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
+  const author_img = document.getElementById("auth_user_img").getAttribute("src");
+  const newContent = document.getElementById(`replyCommentTextArea_${replyCommentId}`).value
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({ "content": newContent, "post": post_id, "author": authorID, "parent_comment": parent_comment_id}),
+  })
+  .then(response => response.json())
+  .then(data => {
+    const commentElement = document.getElementById(`reply-comment-${replyCommentId}`).textContent;
+    // Check if newContent is not empty
+    if (newContent !== '') {
+          // Update the comment element's text content
+          commentElement.textContent = newContent;
+    } else {
+          console.log("New content is empty");
+    }
+        
+      // Close the modal
+      const modalId = `#editRCommentModal-${replyCommentId}`;
+      const modal = document.querySelector(modalId);
+      if (modal) {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.hide();
+      }
+
+      // Remove the modal backdrop
+      const modalBackdrop = document.querySelector('.modal-backdrop');
+      if (modalBackdrop) {
+        modalBackdrop.remove();
+      }
+      console.log('Reply of the comment updated successfully');
+      show_details_post()
+    })
+  .catch((error) => {
+      console.error('Error updating reply of the comment:', error);
+    })
+};
 
 
 

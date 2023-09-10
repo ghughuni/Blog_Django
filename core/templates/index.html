@@ -87,7 +87,7 @@
                   </a></li>
               </ul>
               <!-- Button open post detail -->
-              <a href="{% url 'post_detail_ajax' post.pk %}" class="text-decoration-none details-link" data-post-pk="{{ post.pk }}" data-show-post-detail>
+              <a href="{% url 'postDetails' post.pk %}" class="text-decoration-none details-link" data-post-pk="{{ post.pk }}" data-show-post-detail>
                 <h5><strong class="card-title fst-italic">{{ post.title }}</strong></h5>
               </a>              
               <p class="card-text">{{ post.body }}</p>

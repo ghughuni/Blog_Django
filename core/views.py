@@ -17,7 +17,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 
-def post_detail_ajax(request, pk):
+def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
     comments = Comment.objects.filter(post=pk)
@@ -89,8 +89,7 @@ def post_detail_ajax(request, pk):
         'profile_user': profile_user,
         'users':users
     }
-    return render(request, 'post_detail_ajax.html', context)
-
+    return render(request, 'post_detail.html', context)
 
 def index(request):
     search_query = request.GET.get('q')
@@ -223,78 +222,78 @@ def user_room(request):
     }
     return render(request, 'user_room.html', context)
 
-def postDetails(request, pk):
-    post = get_object_or_404(Post, post_id=pk)
-    ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
-    comments = Comment.objects.filter(post=pk)
-    if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
-    else:
-        profile_user=None
-    users=User_profiles.objects.all()
-    reply_comments = ReplyComments.objects.filter(post=pk)
-    try:
-        user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
-        user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
-    except:
-        user_has_liked=0
-        user_has_unliked=0
-    data = {
-        'post': {
-            'title': post.title,
-            'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
-            'author': post.author.username,
-            'total_likes': post.total_likes,
-            'total_unlikes': post.total_unlikes,
-        },
-        'comments': [
-            {
-                'author': comment.author.username,
-                'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-                'content': comment.content,
-                'reply_comments': [
-                    {
-                        'author': r_comment.author.username,
-                        'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-                        'content': r_comment.content,
-                    }
-                    for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
-                ],
-            }
-            for comment in comments
-        ],
-    }
+# def postDetails(request, pk):
+#     post = get_object_or_404(Post, post_id=pk)
+#     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
+#     comments = Comment.objects.filter(post=pk)
+#     if request.user.is_authenticated:
+#         profile_user=User_profiles.objects.get(author=request.user)
+#     else:
+#         profile_user=None
+#     users=User_profiles.objects.all()
+#     reply_comments = ReplyComments.objects.filter(post=pk)
+#     try:
+#         user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
+#         user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
+#     except:
+#         user_has_liked=0
+#         user_has_unliked=0
+#     data = {
+#         'post': {
+#             'title': post.title,
+#             'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
+#             'author': post.author.username,
+#             'total_likes': post.total_likes,
+#             'total_unlikes': post.total_unlikes,
+#         },
+#         'comments': [
+#             {
+#                 'author': comment.author.username,
+#                 'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+#                 'content': comment.content,
+#                 'reply_comments': [
+#                     {
+#                         'author': r_comment.author.username,
+#                         'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
+#                         'content': r_comment.content,
+#                     }
+#                     for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
+#                 ],
+#             }
+#             for comment in comments
+#         ],
+#     }
     
-    if ip_address not in post.viewed_ips:
-        post.views += 1 
-        post.viewed_ips.append(ip_address)
-        post.save()
-    comments = post.comment_set.all().order_by('-created')
-    reply_comments = ReplyComments.objects.all().order_by('-created')
+#     if ip_address not in post.viewed_ips:
+#         post.views += 1 
+#         post.viewed_ips.append(ip_address)
+#         post.save()
+#     comments = post.comment_set.all().order_by('-created')
+#     reply_comments = ReplyComments.objects.all().order_by('-created')
 
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            if 'content' in request.POST:
-                content = request.POST['content']
-                Comment.objects.create(post=post, author=request.user, content=content)
-            if 'reply_content' in request.POST:
-                parent_comment_id = request.POST.get('parent_comment_id')
-                parent_comment = get_object_or_404(Comment, id=parent_comment_id)
-                content = request.POST.get('reply_content')
-                ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
+#     if request.method == 'POST':
+#         if request.user.is_authenticated:
+#             if 'content' in request.POST:
+#                 content = request.POST['content']
+#                 Comment.objects.create(post=post, author=request.user, content=content)
+#             if 'reply_content' in request.POST:
+#                 parent_comment_id = request.POST.get('parent_comment_id')
+#                 parent_comment = get_object_or_404(Comment, id=parent_comment_id)
+#                 content = request.POST.get('reply_content')
+#                 ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
 
-    context = {
-        'data':JsonResponse(data),
-        'post': post,
-        'comments': comments,
-        'reply_comments': reply_comments,
-        'user_has_liked': user_has_liked,
-        'user_has_unliked': user_has_unliked,
-        'profile_user': profile_user,
-        'users':users
-    }
+#     context = {
+#         'data':JsonResponse(data),
+#         'post': post,
+#         'comments': comments,
+#         'reply_comments': reply_comments,
+#         'user_has_liked': user_has_liked,
+#         'user_has_unliked': user_has_unliked,
+#         'profile_user': profile_user,
+#         'users':users
+#     }
 
-    return render(request, 'post_detail.html', context)
+#     return render(request, 'post_detail.html', context)
 
 def share_on_facebook(request):
     current_url = request.build_absolute_uri()
@@ -398,7 +397,6 @@ def replyCommentsList(request):
     replyComments_serializer = ReplyCommentsSerializer(replyComments, many=True)
     return Response(replyComments_serializer.data)
 
-
 @api_view(['GET'])
 def postDetail(request, pk):
     data = {}  
@@ -499,6 +497,34 @@ def delete_reply_comments(request, pk):
         return Response("Reply comment successfully deleted")
     else:
         return Response("Invalid HTTP method")
+
+@api_view(['POST'])
+def update_comment(request, pk):
+    try:
+        comment = Comment.objects.get(pk=pk)
+    except Comment.DoesNotExist:
+        return Response({"message": "Comment does not exist"})
+
+    serializer = CommentSerializer(comment, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+    
+
+@api_view(['POST'])
+def update_reply_comment(request, pk):
+    try:
+        reply_comment = ReplyComments.objects.get(pk=pk)
+    except ReplyComments.DoesNotExist:
+        return Response({"message": "Replycomment does not exist"})
+
+    serializer = ReplyCommentsSerializer(reply_comment, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+    
 
 @login_required
 def like_unlike_post(request, pk):
