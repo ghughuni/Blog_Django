@@ -22,8 +22,8 @@ const delete_reply_comment = document.querySelector("#delete_reply_comment");
 const edit_reply_comment = document.querySelector("#edit_reply_comment");
 const comments_box = document.getElementById("comments_box");
 const like_unlike_button = document.getElementById("like_unlike_button")
-const commentForm = document.getElementById("comment-form");
-
+const comment_form_box = document.getElementById("comment_form_box");
+const total_comments_button = document.getElementById("total_comments");
 
 
 
@@ -36,7 +36,19 @@ function show_details_post() {
   fetch(postsUrl)
     .then((resp) => resp.json())
     .then(function (data) {
-      // console.log("Data:", data);
+      console.log("All Data of Post:", data);
+      total_comments_button.textContent=data.total_comments
+      if (data.user_authenticated){
+        commentForm=`<form id="comment-form" class="mb-4" data-post-id="${post_id}" method="post">
+                        <textarea class="form-control" id="comment-content" name="content" rows="3" placeholder="add comment..." required></textarea>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary m-2 " name="add_comment" id="add-comment-btn" value='${post_id}'>Add</button>
+                        </div>
+                    </form>`
+      }else{
+        commentForm=''
+      }
+      comment_form_box.innerHTML=commentForm
       if (data.user_authenticated){
         if (data.user_has_liked === 1){
           likes=`<i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">${data.total_likes}</span>`
@@ -49,19 +61,19 @@ function show_details_post() {
           unlikes=`<i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>`
         }
         likes_unlikes=`<form>
-                      <button class="btn btn-light like-btn mx-2" data-comment-id="${data.post_id}" name="like-button">${likes}</button>
-                      <button class="btn btn-light unlike-btn mx-2" data-comment-id="${data.post_id}" name="unlike-button">${unlikes}</button>
+                      <button class="btn btn-light like-btn mx-2" data-post-id="${data.post_id}" name="like-button" data-action="like">${likes}</button>
+                      <button class="btn btn-light unlike-btn mx-2" data-post-id="${data.post_id}" name="unlike-button" data-action="unlike">${unlikes}</button>
                     </form>`
       }else{
-        likes_unlikes=`<button class="btn btn-light like-btn mx-2" data-comment-id="${data.post_id}">
+        likes_unlikes=`<button class="btn btn-light like-btn mx-2" data-post-id="${data.post_id}" data-action="like">
                           <i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">${data.total_likes}</span>
                       </button>
-                      <button class="btn btn-light unlike-btn mx-2" data-comment-id="${data.post_id}">
+                      <button class="btn btn-light unlike-btn mx-2" data-post-id="${data.post_id}" data-action="unlike">
                           <i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>
                       </button>`
       }
       like_unlike_button.innerHTML=likes_unlikes;
-
+      //All comments with replies section
       for (let i = 0; i < data.comments.length; i++) {
         let replies = "";
         if (
@@ -111,7 +123,7 @@ function show_details_post() {
                               </div> 
                           </div>`;
         } else {
-          reply_button = ``;
+          reply_button = `<br>`;
         }
         
         if (data.comments[i].replyComments.length > 0) {
@@ -130,7 +142,7 @@ function show_details_post() {
             if (
               data.user_authenticated === data.comments[i].replyComments[j].author
             ) {
-              r_edit_comment_button = `<button class="btn btn-light text-start" data-bs-toggle="modal"
+              r_edit_comment_button = `<button class="btn btn-light text-start w-100 btn-block" data-bs-toggle="modal"
                                             data-bs-target="#editRCommentModal-${data.comments[i].replyComments[j].id}"
                                             data-comment-id="${data.comments[i].replyComments[j].id}"><i class="bi bi-pencil"> </i> Edit
                                             Comment
@@ -144,7 +156,7 @@ function show_details_post() {
               data.user_authenticated === data.comments[i].replyComments[j].author
             ) {
               r_delete_comment_form = `<form>
-                                            <button type="button" class="btn btn-light text-start" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.comments[i].replyComments[j].id}"
+                                            <button type="button" class="btn btn-light text-start btn-block" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.comments[i].replyComments[j].id}"
                                                 ><i class="bi bi-trash"> </i> Delete
                                                 Comment</button>
                                         </form>`;
@@ -162,7 +174,7 @@ function show_details_post() {
                             <strong class="me-1">${data.comments[i].replyComments[j].author_username}</strong>
                             <small class="text-muted fst-italic mb-2 me-1"> | ${data.comments[i].replyComments[j].created}</small>
                             ${r_three_dot_button}
-                            <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
+                            <div class="dropdown-menu dropdown-menu-lg-end p-2">
                                 ${r_edit_comment_button}
                                 ${r_delete_comment_form}
                             </div>
@@ -303,9 +315,20 @@ function show_details_post() {
               </div>
               `;
 
-        // comments_box.innerHTML += item;
         comments_box.insertAdjacentHTML("afterbegin", item);
       }
+
+      // call create comment function
+      const add_comment_btn = document.getElementById('add-comment-btn')
+      add_comment_btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const post_id = add_comment_btn.getAttribute('value');
+        
+        create_comment(post_id)
+        total=data.total_comments+=1
+        total_comments_button.textContent=total
+      });
+
       // call delete comment function
       const deleteCommentButtons = document.querySelectorAll('#delete_comment')
       deleteCommentButtons.forEach(button => {
@@ -314,6 +337,8 @@ function show_details_post() {
           const commentId = button.getAttribute('data-comment-id');
       
           deleteComment(commentId);
+          total=data.total_comments-=1
+          total_comments_button.textContent=total
         });
       });
       
@@ -324,6 +349,7 @@ function show_details_post() {
           e.preventDefault();
           const parent_comment_id = this.value;
           create_reply(parent_comment_id);
+          
           document.getElementById("r-comment-content").value=''
         });
       });
@@ -358,14 +384,102 @@ function show_details_post() {
           updateReplyComment(replyCommentId)
         });
       });
+
+      // like/unlike actions
+      const likeUnlikeButtons = document.querySelectorAll('.like-btn, .unlike-btn');
+      likeUnlikeButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const postID = button.getAttribute('data-post-id');
+            let like = data.user_has_liked
+            let unlike = data.user_has_unliked
+            console.log('Before:', like, unlike)
+            const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
+            const action = button.getAttribute('data-action');
+            
+            // Like Action
+            if (action === 'like'){
+              console.log("Action was LIKE" )
+              if (like === 0 && unlike === 0){
+                like = 1;
+                unlike = 0;
+              }; 
+              if (like === 0 && unlike === 1){
+                like = 1;
+                unlike = 0;
+              };
+
+              button.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">${data.total_likes}</span>`;
+              const totalLikesElement = button.querySelector('.total-likes');
+              const currentTotalLikes = parseInt(totalLikesElement.textContent);
+              totalLikesElement.textContent = (currentTotalLikes + 1).toString();
+              const unlikeButton = document.querySelector('.unlike-btn');
+              if (unlikeButton.textContent.includes('Unliked')){
+                unlikeButton.innerHTML = `<i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>`;
+                const totalUnlikesElement = button.querySelector('.total-unlikes');
+                const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
+                totalUnlikesElement.textContent = (currentTotalUnlikes - 1).toString();
+              }
+            }
+            // UnLike Action
+            if (action === 'unlike'){
+              console.log("Action was UNLIKE" )
+              if (like === 0 && unlike === 0){
+                like = 0;
+                unlike = 1;
+              };
+              if (like === 1 && unlike === 0){
+                like = 0;
+                unlike = 1;
+              };
+              button.innerHTML = `<i class="fa-solid fa-thumbs-down"></i> Unliked <span class="total-unlikes">${data.total_unlikes}</span>`;
+              const totalUnlikesElement = button.querySelector('.total-unlikes');
+              const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
+              totalUnlikesElement.textContent = (currentTotalUnlikes + 1).toString();
+              const likeButton = document.querySelector('.like-btn');
+              if (likeButton.textContent.includes('Liked')){
+                likeButton.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">${data.total_likes}</span>`;
+                const totallikesElement = button.querySelector('.total-likes');
+                const currentTotalLikes = parseInt(totallikesElement.textContent);
+                totallikesElement.textContent = (currentTotalLikes - 1).toString();
+              }
+              
+              
+              
+            }
+            try {
+              const response = await fetch(`/like_unlike_post/${postID}/`, {
+                  method: 'POST',
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken, 
+                  },
+                  body: JSON.stringify({ 'like': like, 'unlike': unlike, 'author': authorID, 'post': postID }),
+              });
+
+              if (!response.ok) {
+                console.error('Failed to perform the action');
+                return;
+              }
+              const data = await response.json();
+             
+
+              console.log('Last data:', data)
+              console.log('After:', like, unlike)
+              
+          } catch (error) {
+              console.error('An error occurred:', error);
+          }
+      });
+  
+    });
+
     });
 }
 
 
 // CREATE comment
-commentForm.addEventListener("submit", function (e) {
-  e.preventDefault();
-  const post_id = commentForm.dataset.postId;
+function create_comment(post_id){
   const content = document.getElementById("comment-content").value;
   const author = document.getElementById("auth_user").textContent; 
   const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
@@ -473,17 +587,18 @@ commentForm.addEventListener("submit", function (e) {
 
       // Append the new comment to the comments_box
       comments_box.insertAdjacentHTML("afterbegin", newComment);
+      // console.log("Comment added successfully")
     })
     .catch((error) => {
       console.error("Error creating comment:", error);
     });
-});
+};
 
 // CREATE Reply of comment
 function create_reply(parent_comment_id){
     const replycommentsBox = document.getElementById(`replies_comment_box-${parent_comment_id}`);
     const formId = `reply-comment-form-${parent_comment_id}`;
-    const post_id = commentForm.dataset.postId;
+    const post_id = document.getElementById(`comment_form_box`).getAttribute('value')
     const content = document.getElementById(formId).elements.reply_content.value;
     const author = document.getElementById("auth_user").textContent; 
     const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
@@ -515,13 +630,13 @@ function create_reply(parent_comment_id){
                                         <i class="bi bi-three-dots-vertical"></i>
                               </button>
                               <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
-                                  <button class="btn btn-light text-start" data-bs-toggle="modal"
+                                  <button class="btn btn-light text-start w-100 btn-block" data-bs-toggle="modal"
                                     data-bs-target="#editRCommentModal-${data.id}"
                                     data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
                                   Comment
                                   </button>
                                   <form >                  
-                                        <button type="button" class="btn btn-light text-start delete_comment_form" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
+                                        <button type="button" class="btn btn-light text-start delete_comment_form btn-block" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
                                             <i class="bi bi-trash"></i> Delete Comment
                                         </button>
                                     </form>
@@ -576,8 +691,10 @@ function create_reply(parent_comment_id){
         // Close the modal
         const modal = document.querySelector(`#replyCommentModal-${parent_comment_id}`);
         if (modal) {
-          modal.classList.remove('show');
-          modal.style.display = 'none'; 
+          const bootstrapModal = bootstrap.Modal.getInstance(modal); 
+          if (bootstrapModal) {
+            bootstrapModal.hide(); 
+          }
         }
         // Remove the modal backdrop if it exists
         const modalBackdrop = document.querySelector('.modal-backdrop');
@@ -594,7 +711,6 @@ function create_reply(parent_comment_id){
         console.error("Error creating comment:", error);
       });
   };
-
 
 // DELETE comment
 function deleteComment(commentId) {
@@ -677,7 +793,7 @@ function deleteReplyComment(replyCommentId) {
 // UPDATE comment
 function updateComment(commentId) {
   const url = `/api-comment/update/${commentId}/`;
-  const post_id = commentForm.dataset.postId;
+  const post_id = document.getElementById(`comment_form_box`).getAttribute('value')
   const author = document.getElementById("auth_user").textContent; 
   const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
   const author_img = document.getElementById("auth_user_img").getAttribute("src");
@@ -727,7 +843,7 @@ function updateComment(commentId) {
 function updateReplyComment(replyCommentId) {
   const url = `/api-r-comment/update/${replyCommentId}/`;
   const parent_comment_id = document.getElementById(`replyCommentTextArea_${replyCommentId}`).getAttribute("parent_comment_id")
-  const post_id = commentForm.dataset.postId;
+  const post_id = document.getElementById(`comment_form_box`).getAttribute('value')
   const author = document.getElementById("auth_user").textContent; 
   const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
   const author_img = document.getElementById("auth_user_img").getAttribute("src");

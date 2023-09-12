@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
 from .models import Post, Comment, ReplyComments, Likes_Unlikes, User_profiles
-from .serializers import PostSerializer, ReplyCommentsSerializer, CommentSerializer, UserProfilesSerializer
+from .serializers import PostSerializer, ReplyCommentsSerializer, CommentSerializer, UserProfilesSerializer, LikesUnlikesSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
@@ -16,12 +16,15 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.db.models import Sum
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
     comments = Comment.objects.filter(post=pk)
     comments_count = Comment.objects.filter(post=pk).count()
+    total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
+    total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
     if request.user.is_authenticated:
         profile_user=User_profiles.objects.get(author=request.user)
     else:
@@ -39,8 +42,9 @@ def postDetails(request, pk):
             'title': post.title,
             'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
             'author': post.author.username,
-            'total_likes': post.total_likes,
-            'total_unlikes': post.total_unlikes,
+            'total_likes': total_likes,
+            'total_unlikes': total_unlikes,
+            'comments_count': comments_count,
         },
         'comments': [
             {
@@ -87,7 +91,7 @@ def postDetails(request, pk):
         'user_has_liked': user_has_liked,
         'user_has_unliked': user_has_unliked,
         'profile_user': profile_user,
-        'users':users
+        'users': users,
     }
     return render(request, 'post_detail.html', context)
 
@@ -222,162 +226,10 @@ def user_room(request):
     }
     return render(request, 'user_room.html', context)
 
-# def postDetails(request, pk):
-#     post = get_object_or_404(Post, post_id=pk)
-#     ip_address = request.META.get('REMOTE_ADDR')  # Get user's IP address
-#     comments = Comment.objects.filter(post=pk)
-#     if request.user.is_authenticated:
-#         profile_user=User_profiles.objects.get(author=request.user)
-#     else:
-#         profile_user=None
-#     users=User_profiles.objects.all()
-#     reply_comments = ReplyComments.objects.filter(post=pk)
-#     try:
-#         user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
-#         user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
-#     except:
-#         user_has_liked=0
-#         user_has_unliked=0
-#     data = {
-#         'post': {
-#             'title': post.title,
-#             'created': post.created.strftime('%Y-%m-%d %H:%M:%S'),
-#             'author': post.author.username,
-#             'total_likes': post.total_likes,
-#             'total_unlikes': post.total_unlikes,
-#         },
-#         'comments': [
-#             {
-#                 'author': comment.author.username,
-#                 'created': comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-#                 'content': comment.content,
-#                 'reply_comments': [
-#                     {
-#                         'author': r_comment.author.username,
-#                         'created': r_comment.created.strftime('%Y-%m-%d %H:%M:%S'),
-#                         'content': r_comment.content,
-#                     }
-#                     for r_comment in reply_comments if r_comment.parent_comment_id == comment.id
-#                 ],
-#             }
-#             for comment in comments
-#         ],
-#     }
-    
-#     if ip_address not in post.viewed_ips:
-#         post.views += 1 
-#         post.viewed_ips.append(ip_address)
-#         post.save()
-#     comments = post.comment_set.all().order_by('-created')
-#     reply_comments = ReplyComments.objects.all().order_by('-created')
-
-#     if request.method == 'POST':
-#         if request.user.is_authenticated:
-#             if 'content' in request.POST:
-#                 content = request.POST['content']
-#                 Comment.objects.create(post=post, author=request.user, content=content)
-#             if 'reply_content' in request.POST:
-#                 parent_comment_id = request.POST.get('parent_comment_id')
-#                 parent_comment = get_object_or_404(Comment, id=parent_comment_id)
-#                 content = request.POST.get('reply_content')
-#                 ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
-
-#     context = {
-#         'data':JsonResponse(data),
-#         'post': post,
-#         'comments': comments,
-#         'reply_comments': reply_comments,
-#         'user_has_liked': user_has_liked,
-#         'user_has_unliked': user_has_unliked,
-#         'profile_user': profile_user,
-#         'users':users
-#     }
-
-#     return render(request, 'post_detail.html', context)
-
 def share_on_facebook(request):
     current_url = request.build_absolute_uri()
     facebook_share_url = f'https://www.facebook.com/sharer/sharer.php?u={current_url}'
     return redirect(facebook_share_url)
-
-# @login_required                                                                                      
-# def add_comment(request, pk):
-#     post = get_object_or_404(Post, post_id=pk)
-
-#     if request.method == 'POST':
-#         if 'add_comment' in request.POST:
-#             form = CommentForm(request.POST)
-#             if form.is_valid():
-#                 comment = form.save(commit=False)
-#                 comment.post = post
-#                 comment.author = request.user
-#                 comment.save()
-#                 return redirect('postDetails', pk=pk)
-#         elif 'add_reply' in request.POST: 
-#             parent_comment_id = request.POST.get('parent_comment_id')
-#             parent_comment = get_object_or_404(Comment, id=parent_comment_id)
-#             content = request.POST.get('reply_content')
-#             ReplyComments.objects.create(parent_comment=parent_comment, post=post, author=request.user, content=content)
-#             return redirect('postDetails', pk=pk)
-#     else:
-#         form = CommentForm()
-
-#     context = {
-#         'post': post,
-#         'form': form,
-#     }
-
-#     return render(request, 'post_detail.html', context)
-
-# @login_required
-# def edit_comment(request, pk, comment_id):
-#     post = get_object_or_404(Post, post_id=pk)
-
-#     if request.method == 'POST':
-#         if 'edit_comment' in request.POST:
-#             comment = get_object_or_404(Comment, id=comment_id)
-#             comment_id = request.POST.get('comment_id')
-#             form = CommentForm(request.POST, instance=comment)
-#             if form.is_valid():
-#                 form.save()
-#                 return redirect('postDetails', pk=pk)
-#         if 'edit_reply_comment' in request.POST:
-#             comment = get_object_or_404(ReplyComments, id=comment_id)
-#             comment_id = request.POST.get('comment_id')
-#             form = CommentForm(request.POST, instance=comment)
-#             if form.is_valid():
-#                 form.save()
-#                 return redirect('postDetails', pk=pk)
-
-#     else:
-#         form = CommentForm(instance=comment)
-
-#     context = {
-#         'post': post,
-#         'form': form,
-#         'comment': comment,
-#     }
-
-#     return render(request, 'post_detail.html', context)
-
-# @login_required
-# def delete_comment(request, pk, comment_id):
-#     if request.method == 'POST':
-#         if 'delete_comment' in request.POST:
-#             comment = get_object_or_404(Comment, id=comment_id)
-
-#             # Delete child comments of the parent comment
-#             child_comments = ReplyComments.objects.filter(parent_comment=comment)
-#             child_comments.delete()
-
-#             comment.delete()
-#             return redirect('postDetails', pk=pk)
-#         if 'delete_reply_comment' in request.POST:
-#             comment = get_object_or_404(ReplyComments, id=comment_id)
-#             comment.delete()
-#             return redirect('postDetails', pk=pk)
-#     else:
-#         return HttpResponseBadRequest("Invalid request method.")
 
 @api_view(['GET'])
 def postsList(request):
@@ -402,12 +254,16 @@ def postDetail(request, pk):
     data = {}  
     try:
         post = Post.objects.get(post_id=pk)
+        post.total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
+        post.total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
     except Post.DoesNotExist:
         return HttpResponseBadRequest("Invalid request method.")
     post_serializer = PostSerializer(post)
     data = post_serializer.data
     comments = Comment.objects.filter(post=post)
     comments_serializer = CommentSerializer(comments, many=True)
+    comments_count = Comment.objects.filter(post=pk).count()
+    data['total_comments'] = comments_count
     data['comments'] = comments_serializer.data
 
     # Check if the user is authenticated
@@ -525,50 +381,38 @@ def update_reply_comment(request, pk):
         return Response(serializer.data)
     return Response(serializer.errors)
     
-
-@login_required
+@api_view(['POST'])
 def like_unlike_post(request, pk):
-    if request.method == 'POST':
-        post = Post.objects.get(post_id=pk)
-        user = request.user
-        action, created = Likes_Unlikes.objects.get_or_create(post_id=post.post_id, author=user)
-        if 'like-button' in request.POST:
-            if action.like==0 and action.unlike==0:
-                action.like = 1
-                action.unlike = 0
-                action.save()
-                post.total_likes += 1
-                post.save()
-            elif action.like==0 and action.unlike==1:
-                action.like = 1
-                action.unlike = 0
-                action.save()
-                post.total_likes += 1
-                post.total_unlikes -= 1
-                post.save()
-            else:
-                pass
-        elif 'unlike-button' in request.POST:
-            if action.like==0 and action.unlike==0:
-                action.like = 0
-                action.unlike = 1
-                action.save()
-                post.total_unlikes += 1
-                post.save()
-            elif action.like==1 and action.unlike==0:
-                action.like = 0
-                action.unlike = 1
-                action.save()
-                post.total_likes -= 1
-                post.total_unlikes += 1
-                post.save()
-            else:
-                pass
-
-        return redirect(postDetails, pk=pk)
+    user = request.user
+    if not user.is_authenticated:
+        return Response({"error": "Authentication required."})
+    
+    # Check if a like/unlike entry already exists for this post and user
+    existing_entry = Likes_Unlikes.objects.filter(post_id=pk, author=user).first()
+    if existing_entry:
+        # An Action already exists; update it
+        serializer = LikesUnlikesSerializer(existing_entry, data=request.data)
     else:
-        return JsonResponse({'error': 'Invalid request method'})
+        # No Action exists; create a new one
+        serializer = LikesUnlikesSerializer(data=request.data)
 
+    if serializer.is_valid():
+        validated_data = serializer.validated_data
+        validated_data['author'] = user
+        validated_data['post_id'] = pk
+
+        if existing_entry:
+            # If an entry exists, update it
+            serializer.update(existing_entry, validated_data)
+            print('UPDATE action now')
+        else:
+            # Otherwise, create a new entry
+            serializer.save()
+            print('save new action now')
+            
+        return Response(serializer.data)
+    else:
+        return Response(serializer.errors)
 
 
 def contact(request):

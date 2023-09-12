@@ -67,19 +67,12 @@
     </div>
     <!-- comment section -->
     <p class="d-inline-flex gap-1">
-        <button id="show_data" data-post-id="{{ post.pk }}" class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Comments ({{ comments_count }})</button>
+        <button id="show_data" data-post-id="{{ post.pk }}" class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Comments (<span id="total_comments"></span>)</button>
     </p>
     <div class="container p-1 mb-2 collapse multi-collapse">
-            <div class="container-header p-1">
+            <div class="container-header p-1" id="comment_form_box" value="{{ post.pk }}">
                 <!-- Comment form - only shown to authenticated users -->
-                {% if user.is_authenticated %}
-                <form id="comment-form" class="mb-4" data-post-id="{{ post.post_id }}" method="post">
-                    <textarea class="form-control" id="comment-content" name="content" rows="3" placeholder="add comment..." required></textarea>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary m-2 " name="add_comment" id="add-comment-btn" >Add</button>
-                    </div>
-                </form>
-                {% endif %}
+
             </div>
             <div class="container-body mb-2" id="comments_box">
                 <!-- List all comments/reply comments -->
