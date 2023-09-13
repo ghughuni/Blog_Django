@@ -26,9 +26,9 @@ const comment_form_box = document.getElementById("comment_form_box");
 const total_comments_button = document.getElementById("total_comments");
 
 
-
 show_details_post()
-// show details of post
+
+// show details of post function
 function show_details_post() {
   comments_box.innerHTML = "";
   const post_id = detailsPost.dataset.postId;
@@ -317,77 +317,78 @@ function show_details_post() {
 
         comments_box.insertAdjacentHTML("afterbegin", item);
       }
-
-      // call create comment function
-      const add_comment_btn = document.getElementById('add-comment-btn')
-      add_comment_btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const post_id = add_comment_btn.getAttribute('value');
-        
-        create_comment(post_id)
-        total=data.total_comments+=1
-        total_comments_button.textContent=total
-      });
-
-      // call delete comment function
-      const deleteCommentButtons = document.querySelectorAll('#delete_comment')
-      deleteCommentButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const commentId = button.getAttribute('data-comment-id');
       
-          deleteComment(commentId);
-          total=data.total_comments-=1
+      if (data.user_authenticated){
+        // call create comment function
+        const add_comment_btn = document.getElementById('add-comment-btn')
+        add_comment_btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const post_id = add_comment_btn.getAttribute('value');
+          
+          create_comment(post_id)
+          total=data.total_comments+=1
           total_comments_button.textContent=total
         });
-      });
-      
-      // call create reply function
-      const replycommentForm = document.querySelectorAll("#add_reply")
-      replycommentForm.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const parent_comment_id = this.value;
-          create_reply(parent_comment_id);
-          
-          document.getElementById("r-comment-content").value=''
-        });
-      });
 
-      // call delete reply comment function
-      const deleteReplyCommentButtons = document.querySelectorAll('#delete_reply_comment')
-      deleteReplyCommentButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const replyCommentId = button.getAttribute('data-reply_comment-id');
+        // call delete comment function
+        const deleteCommentButtons = document.querySelectorAll('#delete_comment')
+        deleteCommentButtons.forEach(button => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const commentId = button.getAttribute('data-comment-id');
+        
+            deleteComment(commentId);
+            total=data.total_comments-=1
+            total_comments_button.textContent=total
+          });
+        });
+        
+        // call create reply function
+        const replycommentForm = document.querySelectorAll("#add_reply")
+        replycommentForm.forEach(button => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const parent_comment_id = this.value;
+            create_reply(parent_comment_id);
+            
+            document.getElementById("r-comment-content").value=''
+          });
+        });
 
-          deleteReplyComment(replyCommentId);
-        });
-      });
-      
-      // call UPDATE comment function
-      const updateCommentButtons = document.querySelectorAll('#update_comment');
-      updateCommentButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const commentId = button.getAttribute('value');
-          updateComment(commentId)
-        });
-      });
-      
-      // call UPDATE reply comment function
-      const updateReplyCommentButtons = document.querySelectorAll('#update_reply_comment');
-      updateReplyCommentButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const replyCommentId = button.getAttribute('value');
-          updateReplyComment(replyCommentId)
-        });
-      });
+        // call delete reply comment function
+        const deleteReplyCommentButtons = document.querySelectorAll('#delete_reply_comment')
+        deleteReplyCommentButtons.forEach(button => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const replyCommentId = button.getAttribute('data-reply_comment-id');
 
-      // like/unlike actions
-      const likeUnlikeButtons = document.querySelectorAll('.like-btn, .unlike-btn');
-      likeUnlikeButtons.forEach(button => {
+            deleteReplyComment(replyCommentId);
+          });
+        });
+        
+        // call UPDATE comment function
+        const updateCommentButtons = document.querySelectorAll('#update_comment');
+        updateCommentButtons.forEach(button => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const commentId = button.getAttribute('value');
+            updateComment(commentId)
+          });
+        });
+        
+        // call UPDATE reply comment function
+        const updateReplyCommentButtons = document.querySelectorAll('#update_reply_comment');
+        updateReplyCommentButtons.forEach(button => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const replyCommentId = button.getAttribute('value');
+            updateReplyComment(replyCommentId)
+          });
+        });
+
+        // like/unlike actions
+        const likeUnlikeButtons = document.querySelectorAll('.like-btn, .unlike-btn');
+        likeUnlikeButtons.forEach(button => {
         button.addEventListener('click', async (e) => {
             e.preventDefault();
             const postID = button.getAttribute('data-post-id');
@@ -471,14 +472,14 @@ function show_details_post() {
               console.error('An error occurred:', error);
           }
       });
-  
-    });
-
-    });
+    
+        });
+      }
+  });
 }
 
 
-// CREATE comment
+// CREATE comment function
 function create_comment(post_id){
   const content = document.getElementById("comment-content").value;
   const author = document.getElementById("auth_user").textContent; 
@@ -594,7 +595,7 @@ function create_comment(post_id){
     });
 };
 
-// CREATE Reply of comment
+// CREATE Reply of comment function
 function create_reply(parent_comment_id){
     const replycommentsBox = document.getElementById(`replies_comment_box-${parent_comment_id}`);
     const formId = `reply-comment-form-${parent_comment_id}`;
@@ -712,7 +713,7 @@ function create_reply(parent_comment_id){
       });
   };
 
-// DELETE comment
+// DELETE comment function
 function deleteComment(commentId) {
   const url = `/api-comments/delete/${commentId}/`;
 
@@ -751,7 +752,7 @@ function deleteComment(commentId) {
     });
 }
 
-// DELETE Reply of the comment
+// DELETE Reply of the comment function
 function deleteReplyComment(replyCommentId) {
   const url = `/api-r-comments/delete/${replyCommentId}/`;
 
@@ -790,7 +791,7 @@ function deleteReplyComment(replyCommentId) {
     });
 }
 
-// UPDATE comment
+// UPDATE comment function
 function updateComment(commentId) {
   const url = `/api-comment/update/${commentId}/`;
   const post_id = document.getElementById(`comment_form_box`).getAttribute('value')
@@ -839,7 +840,7 @@ function updateComment(commentId) {
     })
 };
 
-// UPDATE Reply comment
+// UPDATE Reply comment function
 function updateReplyComment(replyCommentId) {
   const url = `/api-r-comment/update/${replyCommentId}/`;
   const parent_comment_id = document.getElementById(`replyCommentTextArea_${replyCommentId}`).getAttribute("parent_comment_id")

@@ -75,7 +75,7 @@
     <!-- Posts Section -->
     <div class="col-6 mt-2">
       <div class="row g-4">
-        {% for post in posts %}
+        {% for post in page_obj  %}
         <div class="col-lg-4 p-2">
           <div class="card shadow ">
             <img src="{{ post.image.url }}" alt="Post Image" class="card-img-top">
@@ -98,8 +98,45 @@
           </div>
         </div>
         {% endfor %}
+
+        <!-- Pagination -->
+        <div class="pagination d-flex justify-content-center mb-5">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+              {% endif %}
+              <li class="page-item disabled">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+              </li>
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+
+        </div>
       </div>
     </div>
+   
     <!-- Top_Post Section -->
     <div class="col-2 tops">
       <div>

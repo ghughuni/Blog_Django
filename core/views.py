@@ -17,6 +17,36 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.db.models import Sum
+from django.core.paginator import Paginator
+
+
+def index(request):
+    search_query = request.GET.get('q')
+    top_posts = Post.objects.order_by('-views')[:3]
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
+    if search_query:
+        posts = Post.objects.filter(
+            Q(title__icontains=search_query) | Q(body__icontains=search_query)
+        ).order_by('-created')
+    else:
+        posts = Post.objects.all().order_by('-created')
+        paginator = Paginator(posts, 6)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    context = {
+        'posts': posts,
+        'tags': tags,
+        'top_posts': top_posts,
+        'profile_user': profile_user,
+        "page_obj": page_obj,
+    }
+    return render(request, "index.html", context)
+
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
@@ -94,29 +124,6 @@ def postDetails(request, pk):
         'users': users,
     }
     return render(request, 'post_detail.html', context)
-
-def index(request):
-    search_query = request.GET.get('q')
-    top_posts = Post.objects.order_by('-views')[:3]
-    if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
-    else:
-        profile_user=None
-    if search_query:
-        posts = Post.objects.filter(
-            Q(title__icontains=search_query) | Q(body__icontains=search_query)
-        ).order_by('-created')
-    else:
-        posts = Post.objects.all().order_by('-created')
-
-    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
-    context = {
-        'posts': posts,
-        'tags': tags,
-        'top_posts': top_posts,
-        'profile_user': profile_user,
-    }
-    return render(request, "index.html", context)
 
 def index_by_tag(request, tag_slug):
     posts = Post.objects.filter(slug=tag_slug).order_by('-created')
@@ -213,7 +220,6 @@ def user_profile(request):
     }
     return render(request, 'user_profile.html', context)
 
-
 @login_required
 def user_room(request):
     user = request.user
@@ -230,190 +236,6 @@ def share_on_facebook(request):
     current_url = request.build_absolute_uri()
     facebook_share_url = f'https://www.facebook.com/sharer/sharer.php?u={current_url}'
     return redirect(facebook_share_url)
-
-@api_view(['GET'])
-def postsList(request):
-    posts = Post.objects.all()
-    posts_serializer = PostSerializer(posts, many=True)
-    return Response(posts_serializer.data)
-
-@api_view(['GET'])
-def commentsList(request):
-    comments = Comment.objects.all()
-    comments_serializer = CommentSerializer(comments, many=True)
-    return Response(comments_serializer.data)
-
-@api_view(['GET'])
-def replyCommentsList(request):
-    replyComments = ReplyComments.objects.all()
-    replyComments_serializer = ReplyCommentsSerializer(replyComments, many=True)
-    return Response(replyComments_serializer.data)
-
-@api_view(['GET'])
-def postDetail(request, pk):
-    data = {}  
-    try:
-        post = Post.objects.get(post_id=pk)
-        post.total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
-        post.total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
-    except Post.DoesNotExist:
-        return HttpResponseBadRequest("Invalid request method.")
-    post_serializer = PostSerializer(post)
-    data = post_serializer.data
-    comments = Comment.objects.filter(post=post)
-    comments_serializer = CommentSerializer(comments, many=True)
-    comments_count = Comment.objects.filter(post=pk).count()
-    data['total_comments'] = comments_count
-    data['comments'] = comments_serializer.data
-
-    # Check if the user is authenticated
-    if request.user.is_authenticated:
-        user_profile = User_profiles.objects.get(author_id=request.user.id)
-        user_authenticated_data = UserProfilesSerializer(user_profile).data
-        data['user_authenticated'] = user_authenticated_data['author']
-        try:
-            user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
-            user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
-        except:
-            user_has_liked=0
-            user_has_unliked=0
-        data['user_has_liked'] = user_has_liked
-        data['user_has_unliked'] = user_has_unliked
-    else:
-        data['user_authenticated'] = None
-
-    # Retrieve replyComments and organize them under their parent comments
-    for comment_data in data['comments']:
-        comment_id = comment_data['id']
-        reply_comments = ReplyComments.objects.filter(parent_comment=comment_id)
-        reply_comments_serializer = ReplyCommentsSerializer(reply_comments, many=True)
-        comment_data['replyComments'] = reply_comments_serializer.data
-        # Fetch user's profile data for the comment
-        user_profile = User_profiles.objects.get(author=comment_data['author'])
-        user_profile_serializer = UserProfilesSerializer(user_profile)
-        comment_data['comment_Author_Profile'] = user_profile_serializer.data
-        # Fetch user's profile data for each reply comment
-        for reply_comment_data in comment_data['replyComments']:
-            user_profile = User_profiles.objects.get(author=reply_comment_data['author'])
-            user_profile_serializer = UserProfilesSerializer(user_profile)
-            reply_comment_data['reply_Author_Profile'] = user_profile_serializer.data
-    
-    # Fetch profile data of Author of Post
-    user_profile = User_profiles.objects.get(author=post.author)
-    user_profile_serializer = UserProfilesSerializer(user_profile)
-    data['post_Author_Profile'] = user_profile_serializer.data
-
-    return Response(data)
-
-@api_view(['POST'])
-def create_comment(request):
-    if request.method == 'POST':
-        new_serializer = CommentSerializer(data=request.data)
-        if new_serializer.is_valid():
-            new_serializer.save()
-            return Response(new_serializer.data, status=201)
-        return Response(new_serializer.errors, status=400)
-    
-@api_view(['DELETE'])
-def delete_comments(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
-    reply_comments = ReplyComments.objects.filter(parent_comment=pk)
-
-    if request.method == 'DELETE':
-        for reply_comment in reply_comments:
-            # Delete replies of the main comment
-            reply_comment.delete()
-
-        # Delete the main comment
-        comment.delete()
-        
-        return Response('Comment with all Replies successfully deleted!')
-    else:
-        return Response('Invalid HTTP method')
-    
-@api_view(['POST'])
-def create_reply_comment(request):
-    if request.method == 'POST':
-        new_serializer = ReplyCommentsSerializer(data=request.data)
-        if new_serializer.is_valid():
-            new_serializer.save()
-            return Response(new_serializer.data, status=201)
-        return Response(new_serializer.errors, status=400)
-    
-@api_view(['DELETE'])
-def delete_reply_comments(request, pk):
-    try:
-        reply_comment = ReplyComments.objects.get(id=pk)
-    except ReplyComments.DoesNotExist:
-        return Response("Reply comment does not exist")
-
-    if request.method == 'DELETE':
-        # Delete reply comment
-        reply_comment.delete()
-        return Response("Reply comment successfully deleted")
-    else:
-        return Response("Invalid HTTP method")
-
-@api_view(['POST'])
-def update_comment(request, pk):
-    try:
-        comment = Comment.objects.get(pk=pk)
-    except Comment.DoesNotExist:
-        return Response({"message": "Comment does not exist"})
-
-    serializer = CommentSerializer(comment, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
-    
-
-@api_view(['POST'])
-def update_reply_comment(request, pk):
-    try:
-        reply_comment = ReplyComments.objects.get(pk=pk)
-    except ReplyComments.DoesNotExist:
-        return Response({"message": "Replycomment does not exist"})
-
-    serializer = ReplyCommentsSerializer(reply_comment, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
-    
-@api_view(['POST'])
-def like_unlike_post(request, pk):
-    user = request.user
-    if not user.is_authenticated:
-        return Response({"error": "Authentication required."})
-    
-    # Check if a like/unlike entry already exists for this post and user
-    existing_entry = Likes_Unlikes.objects.filter(post_id=pk, author=user).first()
-    if existing_entry:
-        # An Action already exists; update it
-        serializer = LikesUnlikesSerializer(existing_entry, data=request.data)
-    else:
-        # No Action exists; create a new one
-        serializer = LikesUnlikesSerializer(data=request.data)
-
-    if serializer.is_valid():
-        validated_data = serializer.validated_data
-        validated_data['author'] = user
-        validated_data['post_id'] = pk
-
-        if existing_entry:
-            # If an entry exists, update it
-            serializer.update(existing_entry, validated_data)
-            print('UPDATE action now')
-        else:
-            # Otherwise, create a new entry
-            serializer.save()
-            print('save new action now')
-            
-        return Response(serializer.data)
-    else:
-        return Response(serializer.errors)
-
 
 def contact(request):
     if request.user.is_authenticated:
@@ -481,3 +303,189 @@ def page_faq(request):
     else:
         profile_user=None
     return render(request, 'faq.html',{'profile_user': profile_user})
+
+# Api Section
+@api_view(['GET'])
+def postsList(request):
+    posts = Post.objects.all()
+    posts_serializer = PostSerializer(posts, many=True)
+    return Response(posts_serializer.data)
+
+@api_view(['GET'])
+def postDetail(request, pk):
+    data = {}  
+    try:
+        post = Post.objects.get(post_id=pk)
+        post.total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
+        post.total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
+    except Post.DoesNotExist:
+        return HttpResponseBadRequest("Invalid request method.")
+    post_serializer = PostSerializer(post)
+    data = post_serializer.data
+    comments = Comment.objects.filter(post=post)
+    comments_serializer = CommentSerializer(comments, many=True)
+    comments_count = Comment.objects.filter(post=pk).count()
+    data['total_comments'] = comments_count
+    data['comments'] = comments_serializer.data
+
+    # Check if the user is authenticated
+    if request.user.is_authenticated:
+        user_profile = User_profiles.objects.get(author_id=request.user.id)
+        user_authenticated_data = UserProfilesSerializer(user_profile).data
+        data['user_authenticated'] = user_authenticated_data['author']
+        try:
+            user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
+            user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
+        except:
+            user_has_liked=0
+            user_has_unliked=0
+        data['user_has_liked'] = user_has_liked
+        data['user_has_unliked'] = user_has_unliked
+    else:
+        data['user_authenticated'] = None
+
+    # Retrieve replyComments and organize them under their parent comments
+    for comment_data in data['comments']:
+        comment_id = comment_data['id']
+        reply_comments = ReplyComments.objects.filter(parent_comment=comment_id)
+        reply_comments_serializer = ReplyCommentsSerializer(reply_comments, many=True)
+        comment_data['replyComments'] = reply_comments_serializer.data
+        # Fetch user's profile data for the comment
+        user_profile = User_profiles.objects.get(author=comment_data['author'])
+        user_profile_serializer = UserProfilesSerializer(user_profile)
+        comment_data['comment_Author_Profile'] = user_profile_serializer.data
+        # Fetch user's profile data for each reply comment
+        for reply_comment_data in comment_data['replyComments']:
+            user_profile = User_profiles.objects.get(author=reply_comment_data['author'])
+            user_profile_serializer = UserProfilesSerializer(user_profile)
+            reply_comment_data['reply_Author_Profile'] = user_profile_serializer.data
+    
+    # Fetch profile data of Author of Post
+    user_profile = User_profiles.objects.get(author=post.author)
+    user_profile_serializer = UserProfilesSerializer(user_profile)
+    data['post_Author_Profile'] = user_profile_serializer.data
+
+    return Response(data)
+
+# Work with Comments
+@api_view(['GET'])
+def commentsList(request):
+    comments = Comment.objects.all()
+    comments_serializer = CommentSerializer(comments, many=True)
+    return Response(comments_serializer.data)
+
+@api_view(['POST'])
+def create_comment(request):
+    if request.method == 'POST':
+        new_serializer = CommentSerializer(data=request.data)
+        if new_serializer.is_valid():
+            new_serializer.save()
+            return Response(new_serializer.data, status=201)
+        return Response(new_serializer.errors, status=400)
+    
+@api_view(['DELETE'])
+def delete_comments(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    reply_comments = ReplyComments.objects.filter(parent_comment=pk)
+
+    if request.method == 'DELETE':
+        for reply_comment in reply_comments:
+            # Delete replies of the main comment
+            reply_comment.delete()
+
+        # Delete the main comment
+        comment.delete()
+        
+        return Response('Comment with all Replies successfully deleted!')
+    else:
+        return Response('Invalid HTTP method')
+
+@api_view(['POST'])
+def update_comment(request, pk):
+    try:
+        comment = Comment.objects.get(pk=pk)
+    except Comment.DoesNotExist:
+        return Response({"message": "Comment does not exist"})
+
+    serializer = CommentSerializer(comment, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+# Work with Reply Comments   
+@api_view(['GET'])
+def replyCommentsList(request):
+    replyComments = ReplyComments.objects.all()
+    replyComments_serializer = ReplyCommentsSerializer(replyComments, many=True)
+    return Response(replyComments_serializer.data)
+   
+@api_view(['POST'])
+def create_reply_comment(request):
+    if request.method == 'POST':
+        new_serializer = ReplyCommentsSerializer(data=request.data)
+        if new_serializer.is_valid():
+            new_serializer.save()
+            return Response(new_serializer.data, status=201)
+        return Response(new_serializer.errors, status=400)
+    
+@api_view(['DELETE'])
+def delete_reply_comments(request, pk):
+    try:
+        reply_comment = ReplyComments.objects.get(id=pk)
+    except ReplyComments.DoesNotExist:
+        return Response("Reply comment does not exist")
+
+    if request.method == 'DELETE':
+        # Delete reply comment
+        reply_comment.delete()
+        return Response("Reply comment successfully deleted")
+    else:
+        return Response("Invalid HTTP method")
+
+@api_view(['POST'])
+def update_reply_comment(request, pk):
+    try:
+        reply_comment = ReplyComments.objects.get(pk=pk)
+    except ReplyComments.DoesNotExist:
+        return Response({"message": "Replycomment does not exist"})
+
+    serializer = ReplyCommentsSerializer(reply_comment, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+
+@api_view(['POST'])
+def like_unlike_post(request, pk):
+    user = request.user
+    if not user.is_authenticated:
+        return Response({"error": "Authentication required."})
+    
+    # Check if a like/unlike entry already exists for this post and user
+    existing_entry = Likes_Unlikes.objects.filter(post_id=pk, author=user).first()
+    if existing_entry:
+        # An Action already exists; update it
+        serializer = LikesUnlikesSerializer(existing_entry, data=request.data)
+    else:
+        # No Action exists; create a new one
+        serializer = LikesUnlikesSerializer(data=request.data)
+
+    if serializer.is_valid():
+        validated_data = serializer.validated_data
+        validated_data['author'] = user
+        validated_data['post_id'] = pk
+
+        if existing_entry:
+            # If an entry exists, update it
+            serializer.update(existing_entry, validated_data)
+            print('UPDATE action now')
+        else:
+            # Otherwise, create a new entry
+            serializer.save()
+            print('save new action now')
+            
+        return Response(serializer.data)
+    else:
+        return Response(serializer.errors)
