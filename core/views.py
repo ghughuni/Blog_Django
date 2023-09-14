@@ -126,8 +126,12 @@ def postDetails(request, pk):
     return render(request, 'post_detail.html', context)
 
 def index_by_tag(request, tag_slug):
+    top_posts = Post.objects.order_by('-views')[:3]
     posts = Post.objects.filter(slug=tag_slug).order_by('-created')
     tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    paginator = Paginator(posts, 6)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     if request.user.is_authenticated:
         profile_user=User_profiles.objects.get(author=request.user)
     else:
@@ -137,6 +141,8 @@ def index_by_tag(request, tag_slug):
         'posts': posts,
         'tags': tags,
         'profile_user': profile_user,
+        "page_obj": page_obj,
+        'top_posts': top_posts,
     }
 
     return render(request, "index.html", context)
@@ -186,7 +192,7 @@ def update_post(request, pk):
             form.instance.author = post.author
             if form.is_valid():
                 form.save()
-                return redirect('index')
+                return redirect('user_room')
     else:
         form = PostForm(instance=post)
     context = {
@@ -294,7 +300,7 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
-def Not_Found(request):
+def Not_Found(request, exception):
     return render(request, '404.html')
 
 def page_faq(request):
@@ -303,6 +309,8 @@ def page_faq(request):
     else:
         profile_user=None
     return render(request, 'faq.html',{'profile_user': profile_user})
+
+
 
 # Api Section
 @api_view(['GET'])

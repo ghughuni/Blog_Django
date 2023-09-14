@@ -2,28 +2,30 @@
 {% block title %}Update post{% endblock %}
 
 {% block content %}
-<div class="container p-4 my-3 bg-white rounded">
-    <h1>Edit Post</h1>
+<div class="container py-4 mt-3 my-2 bg-white rounded">
+    <h1 class="text-center">Edit Post</h1><hr>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="container p-4 my-5 bg-white rounded">
+        <div class="container py-4 my-5 bg-white rounded">
             <div class="form-group p-2">
                 {{ form.title.label_tag }}
                 {{ form.title }}
-            </div>
+            </div><br>
             <div class="form-group p-2">
                 {{ form.image.label_tag }}
                 {{ form.image }}
-            </div>
+            </div><br>
             <div class="form-group p-2">
-                {{ form.body.label_tag }}
-                {{ form.body }}
-            </div>
+                <label for="{{ form.body.id_for_label }}" class="form-label">Body</label>
+            <textarea class="form-control" id="{{ form.body.id_for_label }}" name="{{ form.body.name }}" rows="4">{{ form.body.value }}</textarea>
+            </div><br>
             <div class="form-group p-2">
                 {{ form.slug.label_tag }}
                 {{ form.slug }}
+            </div><br><hr>
+            <div class="form-group p-2 text-center">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
     </form>
 </div>

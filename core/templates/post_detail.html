@@ -5,16 +5,15 @@
 <div class="col-md-8 m-auto p-2 mb-5">
     <!-- header of post -->
     <div class="mb-2 text-center p-2">
-        <h1 class="col-12 fw-bolder mb-1 text-primary text-center"><strong class="card-title fst-italic ">{{ post.title }}</strong></h1>
+        <h1 class="col-12 fw-bolder mb-1 text-primary text-center"><strong class="card-title fst-italic ">{{ post.title|title }}</strong></h1>
     </div>
     <!-- info of post -->
     <div class="bg-light p-2 mb-3">
-        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created }} | by {{ post.author.first_name }}
-                {{ post.author.last_name }}</small></div>
-        <a href="#"><span class="badge rounded-pill bg-primary">
-                <small class="card-title ">{{ post.slug }}</small>
-            </span>
-        </a>
+        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created }} | by {{ post.author.first_name|title }}
+                {{ post.author.last_name|title }}</small></div>
+        <span class="badge rounded-pill bg-primary">
+                <small class="card-title ">{{ post.slug|title }}</small>
+        </span>
     </div>
     <!-- body of post -->
     <div class="d-flex row p-2">

@@ -65,30 +65,30 @@
     <!-- Tags Section -->
     <div class="col-2 tags ">
       <div>
-      <h4 class="text-center pb-3 mb-3 border-bottom"><strong>All tags </strong></h4>
+      <h4 class="text-center pb-3 mb-3 border-bottom"><strong> All tags </strong></h4>
       <ul>
         {% for tag in tags %}
-        <li><a href="{% url 'index_by_tag' tag %}">{{ tag }}</a></li>
+        <li class="tag-effect"><a href="{% url 'index_by_tag' tag %}">{{ tag|title }}</a></li>
         {% endfor %}
       </ul></div>
     </div>
     <!-- Posts Section -->
-    <div class="col-6 mt-2">
+    <div class="col-6 mt-2 post_mob">
       <div class="row g-4">
         {% for post in page_obj  %}
-        <div class="col-lg-4 p-2">
-          <div class="card shadow ">
+        <div class="col-lg-4 p-2 mob-ver">
+          <div class="card shadow card-hover">
             <img src="{{ post.image.url }}" alt="Post Image" class="card-img-top">
             <div class="card-body ">
               <ul class="list-group list-group-flush ">
-                <li class="list-group-item "><a href="#"><span class="badge rounded-pill bg-primary">
-                      <small class="card-title ">{{ post.slug }}</small>
+                <li class="list-group-item slug_title"><span class="badge rounded-pill bg-primary">
+                      <small class="card-title">{{ post.slug|title }}</small>
                     </span>
-                  </a></li>
+                  </li>
               </ul>
               <!-- Button open post detail -->
-              <a href="{% url 'postDetails' post.pk %}" class="text-decoration-none details-link" data-post-pk="{{ post.pk }}" data-show-post-detail>
-                <h5><strong class="card-title fst-italic">{{ post.title }}</strong></h5>
+              <a href="{% url 'postDetails' post.pk %}" class="text-decoration-none text-center" data-post-pk="{{ post.pk }}" data-show-post-detail>
+                <h5><strong class="card-title fst-italic title_effect">{{ post.title|title }}</strong></h5>
               </a>              
               <p class="card-text">{{ post.body }}</p>
             </div>
@@ -103,32 +103,34 @@
         <div class="pagination d-flex justify-content-center mb-5">
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              {% if page_obj.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1" aria-label="First">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                  </a>
+              {% if page_obj.paginator.num_pages > 1  %}
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                      <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+                {% endif %}
+                <li class="page-item disabled">
+                  <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                 </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                  </a>
-                </li>
-              {% endif %}
-              <li class="page-item disabled">
-                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-              </li>
-              {% if page_obj.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                  </a>
-                </li>
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                      <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                  </li>
+                {% endif %}
               {% endif %}
             </ul>
           </nav>
@@ -143,14 +145,14 @@
       <h4 class="text-center pb-3 mb-3 border-bottom"><strong>Top Post</strong></h4>
       <div class="container">
         {% for top_post in top_posts %}
-          <div class="card shadow mb-4">
+          <div class="card shadow mb-4 card-hover">
             <img src="{{ top_post.image.url }}" alt="Post Image" class="card-img-top">
             <div class="card-body ">
               <!-- Button open post detail -->
               <a href="{% url 'postDetails' top_post.pk %}" class="text-decoration-none">
-                <h6><strong class="card-title fst-italic">{{ top_post.title }}</strong></h6>
+                <h6><strong class="card-title fst-italic title_effect">{{ top_post.title|title }}</strong></h6>
               </a>
-              <p class="card-text">{{ top_post.body }}</p>
+              <!-- <p class="card-text">{{ top_post.body }}</p> -->
             </div>
           </div>
         {% endfor %}

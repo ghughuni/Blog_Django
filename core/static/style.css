@@ -3,8 +3,46 @@ body {
   font-family: 'Libre Baskerville', serif;
 }
 
+.nav-effect:hover{
+  background: radial-gradient(rgb(141, 123, 123), rgb(53, 52, 52));
+  border-radius: 30px;
+  box-shadow: rgba(238, 235, 235, 0.35) 0px 0px 15px;
+}
+
+.slug_title{
+  background-color: transparent;
+}
+
 .card {
   height: 100%;
+  position: relative;
+  transition: transform 0.3s ease;
+  background-color: transparent;
+}
+
+.card-hover:hover {
+  cursor: pointer;
+  transform: scale(1.05);
+  background-color: white
+}
+
+.title_effect:hover{
+  color: #e91111;
+  text-shadow:
+    1px 1px 2px black,
+    0 0 1em rgb(92, 92, 92),
+    0 0 0.2em rgb(92, 92, 92);
+}
+
+.tag-effect{
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.tag-effect:hover{
+  transform: scale(1.05);
+  color: #e91111;
+  text-shadow: 1px 1px black;
 }
 
 .card-img-top {
@@ -72,6 +110,15 @@ body {
     display: flex;
     justify-content: center;
   }
+  .mob-ver{
+    width: 100% !important;
+  }
+
+}
+@media (max-width: 768px ) {
+  .post_mob {
+    width: 83%;
+  }
 }
 
 @media only screen and (max-width: 992px) {
@@ -81,5 +128,14 @@ body {
   .tops{
     display: none !important;
   }
+  .post_mob {
+    width: 83%;
+  }
 
+}
+
+@media only screen and (max-width: 1200px) {
+  .col-lg-4{
+    width: 50%
+  }
 }

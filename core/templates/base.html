@@ -36,87 +36,89 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'index' %}">Home</a>
+            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'index' %}">Home</a>
           </li>
           {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
+            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'user_room' %}">My Room</a>
+            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'user_room' %}">My Room</a>
           </li>
           {% endif %}
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'page_faq' %}">F.A.Q.</a>
+            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'page_faq' %}">F.A.Q.</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active px-3 text-white" aria-current="page" href="{% url 'contact' %}">Contact</a>
+            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'contact' %}">Contact</a>
           </li>
-          {% if user.is_authenticated %}
-          <li class="nav-item dropdown pe-3">
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <img src="{{ profile_user.profile_images.url }}" alt="Profile" width="30" height="30"
-                class="rounded-circle" id="auth_user_img"></i>
-              <span class="d-none d-md-block dropdown-toggle ps-2" id="auth_user" auth-user-id="{{user.id}}">{{user}}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-              <li class="dropdown-header">
-                <h6>{{user.first_name}} {{user.last_name}}</h6>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li>
-                <a class="dropdown-item d-flex align-items-center" href="{% url 'user_profile' %}">
-                  <i class="bi bi-person pe-2"></i>
-                  <span>My Profile</span>
-                </a>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li>
-                <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                  <i class="bi bi-gear pe-2"></i>
-                  <span>Account Settings</span>
-                </a>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-
-              <li>
-                <a class="dropdown-item d-flex align-items-center" href="{% url 'page_faq' %}">
-                  <i class="bi bi-question-circle pe-2"></i>
-                  <span>Need Help?</span>
-                </a>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-
-              <li>
-                <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_view' %}">
-                  <i class="bi bi-box-arrow-right pe-2"></i>
-                  <span>Sign Out</span>
-                </a>
-              </li>
-
-            </ul>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            <a href="{% url 'register' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
-                type="button"><i class="bi bi-person-circle ">
-                </i>Register</button></a>
-          </li>
-          <li class="nav-item">
-            <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
-                type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
-          </li>
-          {% endif %}
         </ul>
+        <span>
+          {% if user.is_authenticated %}
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item dropdown pe-3">
+              <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <img src="{{ profile_user.profile_images.url }}" alt="Profile" width="30" height="30"
+                  class="rounded-circle" id="auth_user_img"></i>
+                <span class="d-none d-md-block dropdown-toggle ps-2 " id="auth_user" auth-user-id="{{user.id}}">{{ user|title }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                <li class="dropdown-header">
+                  <h6>{{user.first_name}} {{user.last_name}}</h6>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item d-flex align-items-center" href="{% url 'user_profile' %}">
+                    <i class="bi bi-person pe-2"></i>
+                    <span>My Profile</span>
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+                    <i class="bi bi-gear pe-2"></i>
+                    <span>Account Settings</span>
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <li>
+                  <a class="dropdown-item d-flex align-items-center" href="{% url 'page_faq' %}">
+                    <i class="bi bi-question-circle pe-2"></i>
+                    <span>Need Help?</span>
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <li>
+                  <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_view' %}">
+                    <i class="bi bi-box-arrow-right pe-2"></i>
+                    <span>Sign Out</span>
+                  </a>
+                </li>
+
+              </ul>
+            {% else %}
+            <span class="nav-item">
+              <a href="{% url 'register' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
+                  type="button"><i class="bi bi-person-circle ">
+                  </i>Register</button></a>
+            </span>
+            <span class="nav-item">
+              <a href="{% url 'login' %}"><button class="btn btn-outline-info rounded-pill px-3 m-1" title="LogIn"
+                  type="button"><i class="bi bi-person-circle "> </i>Log In</button></a>
+            </span>
+            {% endif %}
+          </span>
       </div>
     </div>
   </nav>
@@ -144,11 +146,8 @@
           <div class="small m-0 text-white">Copyright © My Django Blog 2023</div>
         </div>
         <div class="col-auto">
-          <a class="link-light small" href="#!">Privacy</a>
-          <span class="text-white mx-1">·</span>
-          <a class="link-light small" href="#!">Terms</a>
-          <span class="text-white mx-1">·</span>
-          <a class="link-light small" href="{% url 'contact' %}">Contact</a>
+          <div class="small m-0 text-white">Created by <a target="_blank" href="https://github.com/ghughuni"> Ghughuni</a>
+          </div>
         </div>
       </div>
     </div>
