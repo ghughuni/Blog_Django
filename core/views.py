@@ -17,7 +17,8 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.db.models import Sum
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def index(request):
@@ -27,6 +28,8 @@ def index(request):
         profile_user=User_profiles.objects.get(author=request.user)
     else:
         profile_user=None
+    
+    page_obj = None
     if search_query:
         posts = Post.objects.filter(
             Q(title__icontains=search_query) | Q(body__icontains=search_query)
@@ -35,7 +38,13 @@ def index(request):
         posts = Post.objects.all().order_by('-created')
         paginator = Paginator(posts, 6)
         page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
+
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
 
     tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
     context = {
@@ -47,6 +56,27 @@ def index(request):
     }
     return render(request, "index.html", context)
 
+def index_by_tag(request, tag_slug):
+    top_posts = Post.objects.order_by('-views')[:3]
+    posts = Post.objects.filter(slug=tag_slug).order_by('-created')
+    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    paginator = Paginator(posts, 6)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
+    
+    context = {
+        'posts': posts,
+        'tags': tags,
+        'profile_user': profile_user,
+        "page_obj": page_obj,
+        'top_posts': top_posts,
+    }
+
+    return render(request, "index.html", context)
 
 def postDetails(request, pk):
     post = get_object_or_404(Post, post_id=pk)
@@ -55,12 +85,20 @@ def postDetails(request, pk):
     comments_count = Comment.objects.filter(post=pk).count()
     total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
     total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
+
+    if total_likes and total_unlikes:
+        pass  
+    else:
+        total_likes = 0
+        total_unlikes = 0
+
     if request.user.is_authenticated:
         profile_user=User_profiles.objects.get(author=request.user)
     else:
         profile_user=None
     users=User_profiles.objects.all()
     reply_comments = ReplyComments.objects.filter(post=pk)
+
     try:
         user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
         user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
@@ -124,28 +162,6 @@ def postDetails(request, pk):
         'users': users,
     }
     return render(request, 'post_detail.html', context)
-
-def index_by_tag(request, tag_slug):
-    top_posts = Post.objects.order_by('-views')[:3]
-    posts = Post.objects.filter(slug=tag_slug).order_by('-created')
-    tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
-    paginator = Paginator(posts, 6)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
-    else:
-        profile_user=None
-    
-    context = {
-        'posts': posts,
-        'tags': tags,
-        'profile_user': profile_user,
-        "page_obj": page_obj,
-        'top_posts': top_posts,
-    }
-
-    return render(request, "index.html", context)
 
 @login_required
 def add_post(request):
@@ -300,15 +316,19 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
-def Not_Found(request, exception):
+def Not_Found(request, exception=None):
     return render(request, '404.html')
 
 def page_faq(request):
-    if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
-    else:
-        profile_user=None
-    return render(request, 'faq.html',{'profile_user': profile_user})
+    try:
+        if request.user.is_authenticated:
+            profile_user = User_profiles.objects.get(author=request.user)
+        else:
+            profile_user = None
+    except ObjectDoesNotExist:
+        profile_user = None
+
+    return render(request, 'faq.html', {'profile_user': profile_user})
 
 
 
@@ -321,13 +341,18 @@ def postsList(request):
 
 @api_view(['GET'])
 def postDetail(request, pk):
-    data = {}  
+    data = {} 
     try:
         post = Post.objects.get(post_id=pk)
         post.total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
         post.total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
     except Post.DoesNotExist:
         return HttpResponseBadRequest("Invalid request method.")
+    if post.total_likes and post.total_unlikes:
+        pass  
+    else:
+        post.total_likes = 0
+        post.total_unlikes =0
     post_serializer = PostSerializer(post)
     data = post_serializer.data
     comments = Comment.objects.filter(post=post)

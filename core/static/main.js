@@ -36,7 +36,7 @@ function show_details_post() {
   fetch(postsUrl)
     .then((resp) => resp.json())
     .then(function (data) {
-      console.log("All Data of Post:", data);
+      // console.log("All Data of Post:", data);
       total_comments_button.textContent=data.total_comments
       if (data.user_authenticated){
         commentForm=`<form id="comment-form" class="mb-4" data-post-id="${post_id}" method="post">
@@ -60,15 +60,15 @@ function show_details_post() {
         }else {
           unlikes=`<i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>`
         }
-        likes_unlikes=`<form>
-                      <button class="btn btn-light like-btn mx-2" data-post-id="${data.post_id}" name="like-button" data-action="like">${likes}</button>
-                      <button class="btn btn-light unlike-btn mx-2" data-post-id="${data.post_id}" name="unlike-button" data-action="unlike">${unlikes}</button>
+        likes_unlikes=`<form >
+                      <button class="btn btn-light like-btn m-2" data-post-id="${data.post_id}" name="like-button" data-action="like">${likes}</button>
+                      <button class="btn btn-light unlike-btn m-2" data-post-id="${data.post_id}" name="unlike-button" data-action="unlike">${unlikes}</button>
                     </form>`
       }else{
-        likes_unlikes=`<button class="btn btn-light like-btn mx-2" data-post-id="${data.post_id}" data-action="like">
+        likes_unlikes=`<button class="btn btn-light like-btn m-2" data-post-id="${data.post_id}" data-action="like">
                           <i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">${data.total_likes}</span>
                       </button>
-                      <button class="btn btn-light unlike-btn mx-2" data-post-id="${data.post_id}" data-action="unlike">
+                      <button class="btn btn-light unlike-btn m-2" data-post-id="${data.post_id}" data-action="unlike">
                           <i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>
                       </button>`
       }
@@ -222,6 +222,31 @@ function show_details_post() {
         } else {
           replies = ``;
         }
+        // created format
+        const originalDatetimeStr = data.comments[i].created;
+        const originalDatetime = new Date(originalDatetimeStr);
+        const currentDatetime = new Date();
+        const timeDifference = currentDatetime - originalDatetime;
+        const maxTimeForMinutes = 24 * 60 * 60 * 1000; // 24 hours
+        let formattedDatetime; 
+        if (timeDifference < maxTimeForMinutes) {
+          // Show the datetime with minutes
+          formattedDatetime = originalDatetime.toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+          });
+        } else {
+            // Show the datetime without minutes and hours
+            formattedDatetime = originalDatetime.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short', 
+                day: 'numeric',
+            });
+        }
+
         const item = `
         <div class="container comment_container py-2 bg-light rounded-3">
             <!-- parent comments section -->
@@ -231,7 +256,7 @@ function show_details_post() {
                 <div class="ms-3">
                     <div class="d-flex ">
                         <strong class="me-2">${data.comments[i].author_username}</strong>
-                        <small class="text-muted fst-italic mb-2 me-2"> | ${data.comments[i].created} </small>
+                        <small class="text-muted fst-italic mb-2 me-2"> | ${formattedDatetime} </small>
 
                         ${three_dot_button}
                         <div class="dropdown-menu dropdown-menu-lg-end p-2 ">

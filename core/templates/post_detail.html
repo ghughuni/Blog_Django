@@ -9,7 +9,7 @@
     </div>
     <!-- info of post -->
     <div class="bg-light p-2 mb-3">
-        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created }} | by {{ post.author.first_name|title }}
+        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created|timesince }} | by {{ post.author.first_name|title }}
                 {{ post.author.last_name|title }}</small></div>
         <span class="badge rounded-pill bg-primary">
                 <small class="card-title ">{{ post.slug|title }}</small>
@@ -50,16 +50,16 @@
             </div>
         </div>
         <!-- assessment section -->
-        <div class="d-flex mb-3" >
+        <div class="d-flex mb-3 flex-wrap">
             <div id="like_unlike_button">
                 <!-- info of likes and unlikes -->
                 
                 <!-- info of likes and unlikes -->
             </div>
-            <button class="btn btn-light share-btn mx-2" data-comment-id="{{ post.post_id }}">
+            <button class="btn btn-light share-btn m-2" data-comment-id="{{ post.post_id }}">
                 <a href="{% url 'share_facebook' %}" target="_blank"><i class="bi bi-share"></i> Share</a>
             </button>
-            <div class="d-flex justify-content-center align-items-center mx-2" data-comment-id="{{ post.post_id }}">
+            <div class="d-flex justify-content-center align-items-center mx-2 " data-comment-id="{{ post.post_id }}">
                 <i class="bi bi-eye-fill px-2"></i><div class="total_view">{{ post.views }}</div>
             </div>            
         </div>
