@@ -9,6 +9,7 @@ handler404 = 'core.views.Not_Found'
 urlpatterns = [
 
     path("", views.index, name="index"),
+    path("about", views.about, name="about"),
     path("add_post", views.add_post, name="add_post"),
     path('delete_post/<str:pk>/', views.delete_post, name='delete_post'),
     path('update/<str:pk>/', views.update_post, name='update_post'),

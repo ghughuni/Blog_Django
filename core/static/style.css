@@ -1,6 +1,6 @@
 body {
   background-color: antiquewhite;
-  font-family: 'Libre Baskerville', serif;
+  font-family: 'Libre Baskerville', serif !important;
 }
 
 .nav-effect:hover{

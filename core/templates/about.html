@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <header>
+        <h1 class="text-center"><strong>Welcome to My Beautiful Blog</strong></h1>
+    </header>
+
+    <section id="technologies">
+        <h2>Technologies Used:</h2>
+        <ul>
+            <li><h4>Front-end:</h4>
+                <ul>
+                    <li><strong>HTML: </strong> The foundation of my blog's structure and content.</li>
+                    <li><strong>CSS: </strong> Responsible for the stunning visual layout and styling.</li>
+                    <li><strong>Bootstrap: </strong> Enhances responsiveness and ensures a consistent and modern design.</li>
+                    <li><strong>JavaScript: </strong> Adds interactivity, dynamic features, and AJAX for seamless user interactions.</li>
+                </ul><br>
+            </li>
+            <li><h4>Database: </h4>
+                <ul>
+                    <li><strong>PostgreSQL</strong> - A robust and reliable database system that stores all the blog's data securely.</li>
+                </ul><br>
+            </li>
+            <li><h4>Backend:</h4>
+                <ul>
+                    <li><strong>Python: </strong> The core language used for server-side logic.</li>
+                    <li><strong>Django: </strong> A powerful web framework that ensures scalability, security, and maintainability.</li>
+                    <li><strong>Django Rest Framework: </strong> Facilitates the creation of RESTful APIs for smooth communication between the front-end and back-end.</li>
+                </ul><br>
+            </li>
+        </ul>
+        <hr>
+    </section>
+
+    <section id="functions">
+        <h2>Key Functions:</h2>
+        <ul>
+            <li><strong>Responsive Design: </strong> My blog is designed to be fully responsive, ensuring a seamless experience on various devices, from desktops to smartphones.</li>
+            <li><strong>User Authentication: </strong> Anyone can easily create an account, log in, and log out. User authentication ensures the security of your data and personalized interactions.</li>
+            <li><strong>Post Management: </strong> Authenticated users can create, update, and delete their own posts, allowing for easy content management and updates.</li>
+            <li><strong>Comment System: </strong> Users can create, update, and delete comments on posts, fostering engagement and discussions. Replies to comments are also supported for in-depth conversations.</li>
+            <li><strong>Like/Unlike Posts: </strong> Authenticated users can express their appreciation by liking or unliking posts, making it easy to gauge the popularity of content.</li>
+            <li><strong>Category Filters: </strong> Posts can be categorized, and users can search and filter content by categories, making it simple to find topics of interest.</li>
+            <li><strong>Profile Management: </strong> Users can manage their profiles by updating information such as their profile picture, ensuring a personalized online presence.</li>
+            <li><strong>Share on Facebook: </strong> Every post comes with a "Share on Facebook" feature, enabling users to spread their favorite content with friends and followers.</li>
+            <li><strong>View Count: </strong> Each post displays its view count along with the IP addresses of visitors, offering transparency and analytics.</li>
+        </ul>
+        <hr>
+    </section>
+    <h1 class="text-center my-2"><strong>About Me</strong></h1>
+    <section id="experience" class="container col-10 bg-info bg-opacity-10 border border-info rounded mb-5 p-4">
+        <h4 for="contact">Contact:</h4>
+        <div class="d-flex justify-content-around my-1 flex-wrap">
+            <span class="mb-2">
+                <i class="fas fa-envelope fa-lg"> </i>
+                <a href="mailto:gkikvidze91@gmail.com" target="_blank"> >>>   gkikvidze91@gmail.com</a>
+            </span>
+            <span class="mb-2">
+                <i class="fab fa-linkedin fa-lg"> </i>
+                <a href="https://ge.linkedin.com/in/ghughuni-kikvidze-5312b6256" target="_blank"> >>>   LinkedIn</a>
+            </span>
+            <span class="mb-2">
+                <i class="fab fa-github fa-lg"> </i>
+                <a href="https://github.com/ghughuni" target="_blank"> >>>   GitHub</a>
+            </span>
+        </div><hr>
+        
+        <h4 for="about">About:</h4>
+        <p>
+            I am Ghughuni, a beginner in developing applications and websites using Python. I am regularly learning new topics, motivated, and open to new challenges.
+        </p>
+        <br><hr>
+
+        <h4 for="skills">Skills (by this time):</h4>
+        <ul>
+            HTML | CSS | Bootstrap | JavaScript | AJAX | jQuery |  Git/GitHub | SQLite | MySQL | PostgreSQL | MongoDB |  Python |  Django | Django Rest Framework | VS Code
+        </ul>
+        <br><hr>
+
+        <h4 for="projects">My Projects:</h4>
+        <ul>
+            <li><strong>Quiz App</strong> [Python, Django, MySQL, JavaScript, Bootstrap] - <a href="https://ghughuni.pythonanywhere.com" target="_blank">Visit</a></li>
+            <li><strong>CRM App</strong> [Python, Django, PostgreSQL, Pandas, JavaScript, Bootstrap] - <a href="https://github.com/ghughuni/CRM_APP" target="_blank">GitHub</a></li>
+            <li><strong>To-Do App</strong> [Django REST Framework, JavaScript, AJAX] - <a href="https://github.com/ghughuni/Django_REST_Framework_To-Do_App" target="_blank">GitHub</a></li>
+            <li><strong>Quiz</strong> [HTML, CSS, JavaScript] - <a href="https://github.com/ghughuni/Quiz" target="_blank">GitHub</a></li>
+        </ul>
+        <br>
+    </section>
+</div>
+
+{% endblock %}

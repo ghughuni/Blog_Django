@@ -330,6 +330,16 @@ def page_faq(request):
 
     return render(request, 'faq.html', {'profile_user': profile_user})
 
+def about(request):
+    try:
+        if request.user.is_authenticated:
+            profile_user = User_profiles.objects.get(author=request.user)
+        else:
+            profile_user = None
+    except ObjectDoesNotExist:
+        profile_user = None
+
+    return render(request, 'about.html', {'profile_user': profile_user})
 
 
 # Api Section
