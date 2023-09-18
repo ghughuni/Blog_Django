@@ -41,20 +41,20 @@
           <li class="nav-item">
             <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'about' %}">About</a>
           </li>
-          {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'user_room' %}">My Room</a>
-          </li>
-          {% endif %}
           <li class="nav-item">
             <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'page_faq' %}">F.A.Q.</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active px-3 text-white nav-effect" aria-current="page" href="{% url 'contact' %}">Contact</a>
           </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link active px-3 text-info nav-effect" aria-current="page" href="{% url 'add_post' %}">Add Posts</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active px-3 text-info nav-effect" aria-current="page" href="{% url 'user_room' %}">My Room</a>
+          </li>
+          {% endif %}
         </ul>
         <span>
           {% if user.is_authenticated %}

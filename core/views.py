@@ -25,14 +25,14 @@ def index(request):
     search_query = request.GET.get('q')
     top_posts = Post.objects.order_by('-views')[:3]
     if request.user.is_authenticated:
-        profile_user=User_profiles.objects.get(author=request.user)
+        profile_user, created = User_profiles.objects.get_or_create(author=request.user)
     else:
         profile_user=None
     
     page_obj = None
     if search_query:
         posts = Post.objects.filter(
-            Q(title__icontains=search_query) | Q(body__icontains=search_query)
+            Q(title__icontains=search_query)
         ).order_by('-created')
     else:
         posts = Post.objects.all().order_by('-created')
@@ -53,6 +53,7 @@ def index(request):
         'top_posts': top_posts,
         'profile_user': profile_user,
         "page_obj": page_obj,
+        "search_query": search_query
     }
     return render(request, "index.html", context)
 
