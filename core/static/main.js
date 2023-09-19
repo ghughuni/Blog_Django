@@ -73,9 +73,40 @@ function show_details_post() {
                       </button>`
       }
       like_unlike_button.innerHTML=likes_unlikes;
+      // Sort the comments by creation date in descending order (newest to oldest)
+      data.comments.sort((a, b) => {
+        const dateA = new Date(a.created);
+        const dateB = new Date(b.created);
+        return dateA - dateB;
+      });
       //All comments with replies section
       for (let i = 0; i < data.comments.length; i++) {
         let replies = "";
+        // created format
+        const originalDatetimeStr = data.comments[i].created;
+        const originalDatetime = new Date(originalDatetimeStr);
+        const currentDatetime = new Date();
+        const timeDifference = currentDatetime - originalDatetime;
+        const maxTimeForMinutes = 24 * 60 * 60 * 1000; // 24 hours
+        let formattedDatetime; 
+        if (timeDifference < maxTimeForMinutes) {
+          // Show the datetime with minutes
+          formattedDatetime = originalDatetime.toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+          });
+        } else {
+            // Show the datetime without minutes and hours
+            formattedDatetime = originalDatetime.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short', 
+                day: 'numeric',
+            });
+        }
+
         if (
           data.user_authenticated === data.post_Author_Profile.author ||
           data.user_authenticated === data.comments[i].comment_Author_Profile.author
@@ -127,6 +158,11 @@ function show_details_post() {
         }
         
         if (data.comments[i].replyComments.length > 0) {
+          data.comments[i].replyComments.sort((a, b) => {
+            const dateA = new Date(a.created);
+            const dateB = new Date(b.created);
+            return dateB - dateA;
+          });
           for (let j = 0; j < data.comments[i].replyComments.length; j++) {
             if (
               data.user_authenticated === data.post_Author_Profile.author ||
@@ -163,6 +199,31 @@ function show_details_post() {
             } else {
               r_delete_comment_form = ``;
             }
+            
+            // created format
+            const roriginalDatetimeStr = data.comments[i].replyComments[j].created;
+            const roriginalDatetime = new Date(roriginalDatetimeStr);
+            const rcurrentDatetime = new Date();
+            const rtimeDifference = rcurrentDatetime - roriginalDatetime;
+            const rmaxTimeForMinutes = 24 * 60 * 60 * 1000; // 24 hours
+            let rformattedDatetime; 
+            if (rtimeDifference < rmaxTimeForMinutes) {
+              // Show the datetime with minutes
+              rformattedDatetime = roriginalDatetime.toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+              });
+            } else {
+                // Show the datetime without minutes and hours
+                rformattedDatetime = roriginalDatetime.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short', 
+                    day: 'numeric',
+                });
+            }
 
             replies += `
                 <div class="d-flex col mb-1">
@@ -172,7 +233,7 @@ function show_details_post() {
                     <div class="ms-2">
                         <div class="d-flex">
                             <strong class="me-1">${data.comments[i].replyComments[j].author_username}</strong>
-                            <small class="text-muted fst-italic mb-2 me-1"> | ${data.comments[i].replyComments[j].created}</small>
+                            <small class="text-muted fst-italic mb-2 me-1"> | ${rformattedDatetime}</small>
                             ${r_three_dot_button}
                             <div class="dropdown-menu dropdown-menu-lg-end p-2">
                                 ${r_edit_comment_button}
@@ -221,30 +282,6 @@ function show_details_post() {
           }
         } else {
           replies = ``;
-        }
-        // created format
-        const originalDatetimeStr = data.comments[i].created;
-        const originalDatetime = new Date(originalDatetimeStr);
-        const currentDatetime = new Date();
-        const timeDifference = currentDatetime - originalDatetime;
-        const maxTimeForMinutes = 24 * 60 * 60 * 1000; // 24 hours
-        let formattedDatetime; 
-        if (timeDifference < maxTimeForMinutes) {
-          // Show the datetime with minutes
-          formattedDatetime = originalDatetime.toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-          });
-        } else {
-            // Show the datetime without minutes and hours
-            formattedDatetime = originalDatetime.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'short', 
-                day: 'numeric',
-            });
         }
 
         const item = `
@@ -419,13 +456,11 @@ function show_details_post() {
             const postID = button.getAttribute('data-post-id');
             let like = data.user_has_liked
             let unlike = data.user_has_unliked
-            console.log('Before:', like, unlike)
             const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
             const action = button.getAttribute('data-action');
             
             // Like Action
             if (action === 'like'){
-              console.log("Action was LIKE" )
               if (like === 0 && unlike === 0){
                 like = 1;
                 unlike = 0;
@@ -449,7 +484,6 @@ function show_details_post() {
             }
             // UnLike Action
             if (action === 'unlike'){
-              console.log("Action was UNLIKE" )
               if (like === 0 && unlike === 0){
                 like = 0;
                 unlike = 1;
@@ -488,10 +522,6 @@ function show_details_post() {
                 return;
               }
               const data = await response.json();
-             
-
-              console.log('Last data:', data)
-              console.log('After:', like, unlike)
               
           } catch (error) {
               console.error('An error occurred:', error);
@@ -519,101 +549,9 @@ function create_comment(post_id){
     },
     body: JSON.stringify({ 'author_username': author,  "author_profile_image_url": author_img,"content": content,  "post": post_id, "author": authorID }),
   })
-    .then((response) => response.json())
-    .then((data) => {
-      // console.log(data)
-      // Clear the comment input field
+    .then(function (response) {
+      show_details_post()
       document.getElementById("comment-content").value = "";
-
-      // Create HTML for the new comment
-      const newComment = `
-      <div class="container comment_container py-2 bg-light rounded-3">
-          <!-- parent comments section -->
-          <div class="d-flex mb-1">
-          <div class="flex-shrink-0"><img class="rounded-circle mx-auto d-block" 
-                                  src="${author_img}" alt="..." width="50" height="50"></div>
-              <div class="ms-3">
-                  <div class="d-flex ">
-                      <strong class="me-2">${author}</strong>
-                      <small class="text-muted fst-italic mb-2 me-2"> | ${data.created} </small>
-                      <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"aria-expanded="false">
-                        <i class="bi bi-three-dots-vertical"></i>
-                      </button>
-                      <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
-                        <button class="btn btn-light text-start" data-bs-toggle="modal"
-                          data-bs-target="#editCommentModal-${data.id}"
-                          data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
-                          Comment
-                        </button>
-                        <form>                  
-                          <button type="button" class="btn btn-light text-start" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
-                              <i class="bi bi-trash"></i> Delete Comment
-                          </button>
-                        </form>
-                      </div>
-                      <!-- Confirmation Modal for Delete Comment -->
-                      <div class="modal fade" id="confirmDeleteModal-${data.id}" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                          <div class="modal-dialog modal-dialog-centered">
-                              <div class="modal-content">
-                                  <div class="modal-body my-2">
-                                      Are you sure you want to delete this comment?
-                                  </div>
-                                  <div class="modal-footer">
-                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                      <form >
-                                          <button type="submit" class="btn btn-danger"
-                                              name="delete_comment" id="delete_comment"><i class="bi bi-trash"> </i> Delete
-                                              </button>
-                                      </form>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <!-- Edit form for the comment -->
-                      <div class="modal fade" id="editCommentModal-${data.id}" tabindex="-1"
-                          aria-labelledby="editCommentModalLabel" aria-hidden="true">
-                          <div class="modal-dialog">
-                              <div class="modal-content">
-                                  <div class="modal-header">
-                                      <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
-                                      <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                          aria-label="Close"></button>
-                                  </div>
-                                  <div class="modal-body">
-                                      <form id="editCommentForm_${data.id}" method="post">
-                                          <textarea class="form-control" name="content"
-                                              rows="3">${content}</textarea>
-                                          <button type="submit" class="btn btn-primary mt-2"
-                                              name="edit_comment" id="edit_comment">Update</button>
-                                          <button type="button" class="btn btn-secondary mt-2"
-                                              data-bs-dismiss="modal">Cancel</button>
-                                      </form>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                <div id="comment-${data.id}">${content}</div>
-              </div>
-          </div>
-          <!-- Reply button -->      
-          <div class="col-2 mb-3">
-            <div class="d-flex justify-content-end">
-              <button class="btn btn-light reply-button my-2 text-muted" data-bs-toggle="modal"
-                  data-bs-target="#replyCommentModal-${data.id}"
-                  data-comment-id="${data.id}"><i class="bi bi-reply"></i> Reply
-              </button>
-            </div>
-          </div>
-          <!-- Reply comments section -->
-          <div class="container r_comment_container col-10 mb-3 border-start" id="replies_comment_box-${data.id}" value="${data.id}">
-          </div>
-      </div>
-            `;
-
-      // Append the new comment to the comments_box
-      comments_box.insertAdjacentHTML("afterbegin", newComment);
-      // console.log("Comment added successfully")
     })
     .catch((error) => {
       console.error("Error creating comment:", error);
@@ -638,104 +576,25 @@ function create_reply(parent_comment_id){
       },
       body: JSON.stringify({ 'author_username': author,  "author_profile_image_url": author_img, "parent_comment": parent_comment_id, "content": content,  "post": post_id, "author": authorID }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data)
-        // Create HTML for the new Reply comment
-        const newReplies = `
-                     <div class="d-flex col mb-1">
-                          <div class="flex-shrink-0"><img class="rounded-circle mx-auto d-block"
-                              src="${author_img}" alt="..." width="50" height="50"></div>
-                      <div class="ms-2">
-                          <div class="d-flex">
-                              <strong class="me-1">${author}</strong>
-                              <small class="text-muted fst-italic mb-2 me-1"> | ${data.created}
-                              </small>
-                              <button class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true"
-                                        aria-expanded="false" data-comment-id="${data.id}">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                              </button>
-                              <div class="dropdown-menu dropdown-menu-lg-end p-2 ">
-                                  <button class="btn btn-light text-start w-100 btn-block" data-bs-toggle="modal"
-                                    data-bs-target="#editRCommentModal-${data.id}"
-                                    data-comment-id="${data.id}"><i class="bi bi-pencil"> </i> Edit
-                                  Comment
-                                  </button>
-                                  <form >                  
-                                        <button type="button" class="btn btn-light text-start delete_comment_form btn-block" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-${data.id}">
-                                            <i class="bi bi-trash"></i> Delete Comment
-                                        </button>
-                                    </form>
-                              </div>
-                              <!-- Confirmation Modal for Delete reply Comment -->
-                              <div class="modal fade" id="confirmDeleteModal-${data.id}" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                                  <div class="modal-dialog modal-dialog-centered">
-                                      <div class="modal-content">
-                                          <div class="modal-body my-2">
-                                              Are you sure you want to delete this comment?
-                                          </div>
-                                          <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                              <form >
-                                                  <button type="submit" id="delete_reply_comment" data-reply_comment-id="${data.id}" class="btn btn-danger" name="delete_reply_comment"
-                                                      ><i class="bi bi-trash"> </i> Delete </button>
-                                              </form>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                              <!-- Edit form for the Reply comment -->
-                              <div class="modal fade" id="editRCommentModal-${data.id}" tabindex="-1"
-                                  aria-labelledby="editRCommentModalLabel" aria-hidden="true">
-                                  <div class="modal-dialog">
-                                      <div class="modal-content">
-                                          <div class="modal-header">
-                                              <h5 class="modal-title" id="editRCommentModalLabel">Edit Comment
-                                              </h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                  aria-label="Close"></button>
-                                          </div>
-                                          <div class="modal-body">
-                                              <form id="editRCommentForm_${data.id}">
-                                                  <textarea id="replyCommentTextArea_${data.id}" class="form-control" name="content"
-                                                      rows="3" parent_comment_id="${parent_comment_id}">${content}</textarea>
-                                                  <button type="submit" class="btn btn-primary mt-2"
-                                                      name="edit_reply_comment" id="update_reply_comment" value="${data.id}">Update</button>
-                                                  <button type="button" class="btn btn-secondary mt-2"
-                                                      data-bs-dismiss="modal">Cancel</button>
-                                              </form>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                          <div id="reply-comment-${data.id}">${content}</div>
-                      </div>
-                  </div><br>
-                    `;
-
-        // Close the modal
-        const modal = document.querySelector(`#replyCommentModal-${parent_comment_id}`);
-        if (modal) {
-          const bootstrapModal = bootstrap.Modal.getInstance(modal); 
-          if (bootstrapModal) {
-            bootstrapModal.hide(); 
-          }
+    .then(function (response) {
+      const modal = document.querySelector(`#replyCommentModal-${parent_comment_id}`);
+      if (modal) {
+        const bootstrapModal = bootstrap.Modal.getInstance(modal); 
+        if (bootstrapModal) {
+          bootstrapModal.hide(); 
         }
-        // Remove the modal backdrop if it exists
-        const modalBackdrop = document.querySelector('.modal-backdrop');
-        if (modalBackdrop) {
-          modalBackdrop.remove();
-        }
-
-        // Append the new Reply comment to the replies_comment_box
-        replycommentsBox.insertAdjacentHTML("afterbegin", newReplies);
-        // console.log("Reply Comment added successfully")
-        document.getElementById(formId).elements.reply_content.value = ''
-      })
-      .catch((error) => {
-        console.error("Error creating comment:", error);
-      });
+      }
+      // Remove the modal backdrop if it exists
+      const modalBackdrop = document.querySelector('.modal-backdrop');
+      if (modalBackdrop) {
+        modalBackdrop.remove();
+      }
+      show_details_post()
+      document.getElementById(formId).elements.reply_content.value = ''
+    })
+    .catch((error) => {
+      console.error("Error creating comment:", error);
+    });
   };
 
 // DELETE comment function
@@ -857,7 +716,7 @@ function updateComment(commentId) {
       if (modalBackdrop) {
         modalBackdrop.remove();
       }
-      console.log('Comment updated successfully');
+      // console.log('Comment updated successfully');
       show_details_post()
     })
   .catch((error) => {
@@ -906,7 +765,7 @@ function updateReplyComment(replyCommentId) {
       if (modalBackdrop) {
         modalBackdrop.remove();
       }
-      console.log('Reply of the comment updated successfully');
+      // console.log('Reply of the comment updated successfully');
       show_details_post()
     })
   .catch((error) => {
