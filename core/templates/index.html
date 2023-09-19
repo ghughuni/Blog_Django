@@ -47,10 +47,10 @@
   <!-- Category Section -->
   <div class="col-2 tags ">
     <div>
-    <h4 class="text-center pb-3 mb-3 border-bottom"><strong> All Categories </strong></h4>
+    <h4 class="text-center pb-3 mb-3 border-bottom"><strong> Categories </strong></h4>
     <ul>
-      {% for tag in tags %}
-      <li class="tag-effect"><a href="{% url 'index_by_tag' tag %}">{{ tag|title }}</a></li>
+      {% for tag, count in tag_list %}
+      <li class="tag-effect"><a href="{% url 'index_by_tag' tag %}">{{ tag|title }} ({{ count }})</a></li>
       {% endfor %}
     </ul></div>
   </div>

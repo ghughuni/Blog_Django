@@ -36,7 +36,7 @@ function show_details_post() {
   fetch(postsUrl)
     .then((resp) => resp.json())
     .then(function (data) {
-      // console.log("All Data of Post:", data);
+      console.log("All Data of Post:", data);
       total_comments_button.textContent=data.total_comments
       if (data.user_authenticated){
         commentForm=`<form id="comment-form" class="mb-4" data-post-id="${post_id}" method="post">
@@ -451,15 +451,13 @@ function show_details_post() {
         // like/unlike actions
         const likeUnlikeButtons = document.querySelectorAll('.like-btn, .unlike-btn');
         likeUnlikeButtons.forEach(button => {
-        button.addEventListener('click', async (e) => {
+          button.addEventListener('click', function (e) {
             e.preventDefault();
             const postID = button.getAttribute('data-post-id');
             let like = data.user_has_liked
             let unlike = data.user_has_unliked
             const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
             const action = button.getAttribute('data-action');
-            
-            // Like Action
             if (action === 'like'){
               if (like === 0 && unlike === 0){
                 like = 1;
@@ -469,18 +467,6 @@ function show_details_post() {
                 like = 1;
                 unlike = 0;
               };
-
-              button.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">${data.total_likes}</span>`;
-              const totalLikesElement = button.querySelector('.total-likes');
-              const currentTotalLikes = parseInt(totalLikesElement.textContent);
-              totalLikesElement.textContent = (currentTotalLikes + 1).toString();
-              const unlikeButton = document.querySelector('.unlike-btn');
-              if (unlikeButton.textContent.includes('Unliked')){
-                unlikeButton.innerHTML = `<i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>`;
-                const totalUnlikesElement = button.querySelector('.total-unlikes');
-                const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
-                totalUnlikesElement.textContent = (currentTotalUnlikes - 1).toString();
-              }
             }
             // UnLike Action
             if (action === 'unlike'){
@@ -492,41 +478,85 @@ function show_details_post() {
                 like = 0;
                 unlike = 1;
               };
-              button.innerHTML = `<i class="fa-solid fa-thumbs-down"></i> Unliked <span class="total-unlikes">${data.total_unlikes}</span>`;
-              const totalUnlikesElement = button.querySelector('.total-unlikes');
-              const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
-              totalUnlikesElement.textContent = (currentTotalUnlikes + 1).toString();
-              const likeButton = document.querySelector('.like-btn');
-              if (likeButton.textContent.includes('Liked')){
-                likeButton.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">${data.total_likes}</span>`;
-                const totallikesElement = button.querySelector('.total-likes');
-                const currentTotalLikes = parseInt(totallikesElement.textContent);
-                totallikesElement.textContent = (currentTotalLikes - 1).toString();
-              }
-              
-              
-              
             }
-            try {
-              const response = await fetch(`/like_unlike_post/${postID}/`, {
-                  method: 'POST',
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken, 
-                  },
-                  body: JSON.stringify({ 'like': like, 'unlike': unlike, 'author': authorID, 'post': postID }),
-              });
+            like_unlike(like, unlike, postID, authorID)
+          });
+      //   button.addEventListener('click', async (e) => {
+      //       e.preventDefault();
+      //       const postID = button.getAttribute('data-post-id');
+      //       let like = data.user_has_liked
+      //       let unlike = data.user_has_unliked
+      //       const authorID = document.getElementById("auth_user").getAttribute("auth-user-id"); 
+      //       const action = button.getAttribute('data-action');
+            
+      //       // Like Action
+      //       if (action === 'like'){
+      //         if (like === 0 && unlike === 0){
+      //           like = 1;
+      //           unlike = 0;
+      //         }; 
+      //         if (like === 0 && unlike === 1){
+      //           like = 1;
+      //           unlike = 0;
+      //         };
 
-              if (!response.ok) {
-                console.error('Failed to perform the action');
-                return;
-              }
-              const data = await response.json();
+      //         button.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> Liked <span class="total-likes">${data.total_likes}</span>`;
+      //         const totalLikesElement = button.querySelector('.total-likes');
+      //         const currentTotalLikes = parseInt(totalLikesElement.textContent);
+      //         totalLikesElement.textContent = (currentTotalLikes + 1).toString();
+      //         const unlikeButton = document.querySelector('.unlike-btn');
+      //         if (unlikeButton.textContent.includes('Unliked')){
+      //           unlikeButton.innerHTML = `<i class="fa-regular fa-thumbs-down"></i> Unlike <span class="total-unlikes">${data.total_unlikes}</span>`;
+      //           const totalUnlikesElement = button.querySelector('.total-unlikes');
+      //           const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
+      //           totalUnlikesElement.textContent = (currentTotalUnlikes - 1).toString();
+      //         }
+      //       }
+      //       // UnLike Action
+      //       if (action === 'unlike'){
+      //         if (like === 0 && unlike === 0){
+      //           like = 0;
+      //           unlike = 1;
+      //         };
+      //         if (like === 1 && unlike === 0){
+      //           like = 0;
+      //           unlike = 1;
+      //         };
+      //         button.innerHTML = `<i class="fa-solid fa-thumbs-down"></i> Unliked <span class="total-unlikes">${data.total_unlikes}</span>`;
+      //         const totalUnlikesElement = button.querySelector('.total-unlikes');
+      //         const currentTotalUnlikes = parseInt(totalUnlikesElement.textContent);
+      //         totalUnlikesElement.textContent = (currentTotalUnlikes + 1).toString();
+      //         const likeButton = document.querySelector('.like-btn');
+      //         if (likeButton.textContent.includes('Liked')){
+      //           likeButton.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> Like <span class="total-likes">${data.total_likes}</span>`;
+      //           const totallikesElement = button.querySelector('.total-likes');
+      //           const currentTotalLikes = parseInt(totallikesElement.textContent);
+      //           totallikesElement.textContent = (currentTotalLikes - 1).toString();
+      //         }
               
-          } catch (error) {
-              console.error('An error occurred:', error);
-          }
-      });
+              
+              
+      //       }
+      //       try {
+      //         const response = await fetch(`/like_unlike_post/${postID}/`, {
+      //             method: 'POST',
+      //             headers: {
+      //               "Content-Type": "application/json",
+      //               "X-CSRFToken": csrftoken, 
+      //             },
+      //             body: JSON.stringify({ 'like': like, 'unlike': unlike, 'author': authorID, 'post': postID }),
+      //         });
+
+      //         if (!response.ok) {
+      //           console.error('Failed to perform the action');
+      //           return;
+      //         }
+      //         const data = await response.json();
+              
+      //     } catch (error) {
+      //         console.error('An error occurred:', error);
+      //     }
+      // });
     
         });
       }
@@ -773,5 +803,23 @@ function updateReplyComment(replyCommentId) {
     })
 };
 
+function like_unlike(like, unlike, postID, authorID){
+  fetch(`/like_unlike_post/${postID}/`, {
+
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken, 
+          },
+          body: JSON.stringify({ 'like': like, 'unlike': unlike, 'author': authorID, 'post': postID }),
+  })
+    .then(function (response) {
+
+      show_details_post()
+    })
+    .catch((error) => {
+      console.error("Error creating like/unlike:", error);
+    });
+}
 
 

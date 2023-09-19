@@ -5,7 +5,7 @@ import uuid
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=500)
-    image = models.ImageField(upload_to='img', default='static/img.jpg')
+    image = models.ImageField(upload_to='img', default='static/default-blog.png')
     body = models.TextField()
     post_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     created = models.DateTimeField(auto_now_add=True)

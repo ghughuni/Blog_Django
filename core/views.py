@@ -19,6 +19,7 @@ from django.http import HttpResponseForbidden
 from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
+from collections import defaultdict
 
 
 def index(request):
@@ -47,13 +48,22 @@ def index(request):
             page_obj = paginator.page(paginator.num_pages)
 
     tags = Post.objects.order_by('slug').values_list('slug', flat=True).distinct()
+    # Create a dictionary to store slug sums
+    slug_sums = defaultdict(int)
+    # Iterate through the slugs
+    for slug in tags:
+        # Calculate the sum of posts with the same slug
+        slug_sum = Post.objects.filter(slug=slug).count()
+        slug_sums[slug] = slug_sum
+    tag_list = list(slug_sums.items())
+
     context = {
         'posts': posts,
-        'tags': tags,
         'top_posts': top_posts,
         'profile_user': profile_user,
         "page_obj": page_obj,
-        "search_query": search_query
+        "search_query": search_query,
+        'tag_list': tag_list
     }
     return render(request, "index.html", context)
 
@@ -68,6 +78,14 @@ def index_by_tag(request, tag_slug):
         profile_user=User_profiles.objects.get(author=request.user)
     else:
         profile_user=None
+    # Create a dictionary to store slug sums
+    slug_sums = defaultdict(int)
+    # Iterate through the slugs
+    for slug in tags:
+        # Calculate the sum of posts with the same slug
+        slug_sum = Post.objects.filter(slug=slug).count()
+        slug_sums[slug] = slug_sum
+    tag_list = list(slug_sums.items())
     
     context = {
         'posts': posts,
@@ -75,6 +93,7 @@ def index_by_tag(request, tag_slug):
         'profile_user': profile_user,
         "page_obj": page_obj,
         'top_posts': top_posts,
+        'tag_list': tag_list
     }
 
     return render(request, "index.html", context)
@@ -359,7 +378,7 @@ def postDetail(request, pk):
         post.total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
     except Post.DoesNotExist:
         return HttpResponseBadRequest("Invalid request method.")
-    if post.total_likes and post.total_unlikes:
+    if post.total_likes or post.total_unlikes:
         pass  
     else:
         post.total_likes = 0
@@ -377,12 +396,13 @@ def postDetail(request, pk):
         user_profile = User_profiles.objects.get(author_id=request.user.id)
         user_authenticated_data = UserProfilesSerializer(user_profile).data
         data['user_authenticated'] = user_authenticated_data['author']
-        try:
+        hasAction = Likes_Unlikes.objects.filter(post_id=pk, author=request.user).first()
+        if hasAction:
             user_has_liked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('like')[0]['like']
             user_has_unliked = Likes_Unlikes.objects.filter(author=request.user, post=pk).values('unlike')[0]['unlike']
-        except:
-            user_has_liked=0
-            user_has_unliked=0
+        else:
+            user_has_liked = 0
+            user_has_unliked = 0
         data['user_has_liked'] = user_has_liked
         data['user_has_unliked'] = user_has_unliked
     else:
@@ -509,27 +529,21 @@ def like_unlike_post(request, pk):
     
     # Check if a like/unlike entry already exists for this post and user
     existing_entry = Likes_Unlikes.objects.filter(post_id=pk, author=user).first()
+    print(existing_entry)
     if existing_entry:
         # An Action already exists; update it
         serializer = LikesUnlikesSerializer(existing_entry, data=request.data)
-    else:
+        if serializer.is_valid():
+            serializer.save()
+            print('update action now')
+            return Response(serializer.data)
+
+    elif not existing_entry:
         # No Action exists; create a new one
         serializer = LikesUnlikesSerializer(data=request.data)
-
-    if serializer.is_valid():
-        validated_data = serializer.validated_data
-        validated_data['author'] = user
-        validated_data['post_id'] = pk
-
-        if existing_entry:
-            # If an entry exists, update it
-            serializer.update(existing_entry, validated_data)
-            print('UPDATE action now')
-        else:
-            # Otherwise, create a new entry
+        if serializer.is_valid():
             serializer.save()
             print('save new action now')
-            
-        return Response(serializer.data)
+            return Response(serializer.data)    
     else:
         return Response(serializer.errors)
