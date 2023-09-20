@@ -215,7 +215,7 @@ def delete_post(request, pk):
             reply_comments.delete()
 
             posts.delete()
-            return redirect('index') 
+            return redirect('user_room') 
     else:
         return HttpResponseBadRequest("Invalid request method.")
 
@@ -317,14 +317,21 @@ def register(request):
         return render(request, 'register.html', {'title': title})
 
 def loginView(request):
-
-    form = UserLoginForm(request.POST or None)
-    if form.is_valid():
-        username = form.cleaned_data.get("username")
-        password = form.cleaned_data.get("password")
-        users = authenticate(username=username, password=password)
-        login(request, users)
-        return redirect('index')
+    if request.method == 'POST':
+        form = UserLoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+            else:
+                messages.error(request, 'Username or password incorrect')
+        else:
+            messages.error(request, 'Username or password incorrect')
+    else:
+        form = UserLoginForm()
 
     context = {
         'form': form,
@@ -362,7 +369,9 @@ def about(request):
     return render(request, 'about.html', {'profile_user': profile_user})
 
 
-# Api Section
+###################
+### Api Section ###
+###################
 @api_view(['GET'])
 def postsList(request):
     posts = Post.objects.all()
@@ -519,7 +528,6 @@ def update_reply_comment(request, pk):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors)
-
 
 @api_view(['POST'])
 def like_unlike_post(request, pk):

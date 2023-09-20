@@ -6,18 +6,21 @@
     <!-- header of post -->
     <div class="mb-2 text-center p-2">
         <h1 class="col-12 fw-bolder mb-1 text-primary text-center"><strong class="card-title fst-italic ">{{ post.title|title }}</strong></h1>
-    </div>
+    </div><hr>
     <!-- info of post -->
-    <div class="bg-light p-2 mb-3">
-        <div class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created|timesince }} | by {{ post.author.first_name|title }}
-                {{ post.author.last_name|title }}</small></div>
-        <span class="badge rounded-pill bg-primary">
-                <small class="card-title ">{{ post.slug|title }}</small>
-        </span>
+    <div class="p-2 d-flex justify-content-between align-items-center">
+        <div>
+            <span class="badge rounded-pill bg-primary"><small class="card-title "> {{ post.slug|title }}</small>
+            </span>
+            <span class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created|timesince }} | by {{ post.author.first_name|title }}
+                    {{ post.author.last_name|title }} </small>
+            </span>
+        </div>
+        <a href="{% url 'index' %}" type="button" class="btn-close" aria-label="Close"></a>
     </div>
     <!-- body of post -->
     <div class="d-flex row p-2">
-        <div class="image mb-3"><img src="{{ post.image.url }}" alt="Post Image" class="card-img-top img-fluid"></div>
+        <div class="image mb-3 d-flex justify-content-center"><img src="{{ post.image.url }}" alt="Post Image"></div>
         <div class="body mb-3">
             {{ post.body }}
         </div>

@@ -25,9 +25,9 @@ const like_unlike_button = document.getElementById("like_unlike_button")
 const comment_form_box = document.getElementById("comment_form_box");
 const total_comments_button = document.getElementById("total_comments");
 
-
-show_details_post()
-
+if (comments_box){
+  show_details_post()
+}
 // show details of post function
 function show_details_post() {
   comments_box.innerHTML = "";
@@ -821,5 +821,20 @@ function like_unlike(like, unlike, postID, authorID){
       console.error("Error creating like/unlike:", error);
     });
 }
+
+
+const message = document.querySelectorAll('#messages');
+if (message.length > 0){
+  removeMessages()
+}
+
+// Function to remove messages after 2 seconds
+function removeMessages() {
+  const message = document.getElementById('messages');
+  setTimeout(function () {
+      message.innerHTML=''; // Remove all messages
+    }, 4000); // 4 seconds (4000 milliseconds)
+}
+
 
 

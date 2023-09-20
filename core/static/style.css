@@ -86,6 +86,10 @@ body {
   font-size: 24px;
 }
 
+.image {
+  height: 400px;
+  object-fit: cover;
+}
 
 @media (max-width: 576px) {
   .carousel-container {

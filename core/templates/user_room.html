@@ -25,14 +25,21 @@
                     <div class="modal fade" id="postdetail{{ post.pk }}" tabindex="-1" aria-labelledby="ModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog  modal-fullscreen">
-                            <div class="modal-content px-4">
+                            <div class="modal-content px-4 row">
                                 <div class="modal-header">
                                     <h4 class="text-primary "><strong class="card-title fst-italic ">{{ post.title|title}}</strong></h4>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
-                                <div class="modal-image img-fluid"><img src="{{ post.image.url }}" alt="Post Image"
-                                        class="card-img-top img-fluid"></div>
+                                <!-- info of post -->
+                                <div class="p-2">
+                                    <span class="badge rounded-pill bg-primary"><small class="card-title "> {{ post.slug|title }}</small>
+                                    </span>
+                                    <span class="text-muted fst-italic mb-2"> <small>Posted on {{ post.created|timesince }} </small>
+                                    </span>
+                                </div>
+                                <div>
+                                <div class="modal-image img-fluid image d-flex justify-content-center"><img src="{{ post.image.url }}" alt="Post Image"></div></div>
                                 <div class="modal-body">
                                     {{ post.body }}
                                 </div>
@@ -51,7 +58,6 @@
                             </div>
                         </div>
                     </div>
-                    <p class="card-text">{{ post.body }}</p>
                 </div>
             </div>
         </div>

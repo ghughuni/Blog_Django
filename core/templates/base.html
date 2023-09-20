@@ -126,15 +126,15 @@
   </nav>
   <!-- messages Section -->
   {% if messages %}
-  <div class="container pt-3 mt-5 mainbox">
-    {% for message in messages %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">{{message}}<button type="button"
-        class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="container pt-3 mt-5 mainbox" id="messages">
+      {% for message in messages %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">{{message}}<button type="button"
+            class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {%endfor%}
     </div>
-    {%endfor%}
-  </div>
-  <!-- Main Section -->
   {% endif %}
+   <!-- Main Section -->
   <div class="">
     {% block content %}
 
