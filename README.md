@@ -1,20 +1,20 @@
 # Blog_Django
-## Technologies Used:
-# Front-end:
+# Technologies Used:
+## Front-end:
 - HTML: The foundation of my blog's structure and content.
 - CSS: Responsible for the stunning visual layout and styling.
 - Bootstrap: Enhances responsiveness and ensures a consistent and modern design.
 - JavaScript: Adds interactivity, dynamic features, and AJAX for seamless user interactions.
 
-# Database:
+## Database:
 - PostgreSQL - A robust and reliable database system that stores all the blog's data securely.
 
-# Backend:
+## Backend:
 - Python: The core language used for server-side logic.
 - Django: A powerful web framework that ensures scalability, security, and maintainability.
 - Django Rest Framework: Facilitates the creation of RESTful APIs for smooth communication between the front-end and back-end.
 
-## Key Functions:
+# Key Functions:
 - Responsive Design: My blog is designed to be fully responsive, ensuring a seamless experience on various devices, from desktops to smartphones.
 - User Authentication: Anyone can easily create an account, log in, and log out. User authentication ensures the security of your data and personalized interactions.
 - Post Management: Authenticated users can create, update, and delete their own posts, allowing for easy content management and updates.
