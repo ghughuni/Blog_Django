@@ -259,7 +259,7 @@ function show_details_post() {
                             <!-- Edit form for the Reply comment -->
                             <div class="modal fade" id="editRCommentModal-${data.comments[i].replyComments[j].id}" tabindex="-1"
                                 aria-labelledby="editRCommentModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h5 class="modal-title" id="editRCommentModalLabel">Edit Comment</h5>
@@ -321,7 +321,7 @@ function show_details_post() {
                         <!-- Edit form for the comment -->
                         <div class="modal fade" id="editCommentModal-${data.comments[i].id}" tabindex="-1"
                             aria-labelledby="editCommentModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
@@ -356,7 +356,7 @@ function show_details_post() {
         <!-- Reply comment form for the comment -->
               <div class="modal fade" id="replyCommentModal-${data.comments[i].id}" tabindex="-1"
                   aria-labelledby="replyCommentModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
+                  <div class="modal-dialog modal-dialog-centered">
                       <div class="modal-content">
                           <div class="modal-header">
                               <h5 class="modal-title" id="replyCommentModalLabel">Reply Comment</h5>

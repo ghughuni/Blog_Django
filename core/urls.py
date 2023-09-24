@@ -32,7 +32,7 @@ urlpatterns = [
     path('api-replyComments/', views.replyCommentsList, name="replyCommentsList"),
     path('tag/<str:tag_slug>/', views.index_by_tag, name='index_by_tag'),
     path('like_unlike_post/<str:pk>/', views.like_unlike_post, name='like_unlike_post'),
-    path('share/facebook/', views.share_on_facebook, name='share_facebook'),
+    path('share/facebook/<str:pk>', views.share_on_facebook, name='share_facebook'),
     path('Not_Found/', views.Not_Found, name='Not_Found'),
     path('page_faq/', views.page_faq, name='page_faq'),
 

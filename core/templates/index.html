@@ -3,17 +3,23 @@
 
 {% block content %}
 <!-- Carousel Section -->
-<div class="carousel-container bg-secondary">
+<div class="carousel-container bg-dark">
   <div class="row row_slide">
-    <div class="col-md-8 mx-auto">
+    <div class="col-md-8 m-auto">
       <div id="demo" class="carousel slide" data-bs-ride="carousel">
         <!-- The slideshow/carousel -->
         <div class="carousel-inner">
           {% for top_post in top_posts %}
           <div class="carousel-item {% if forloop.first %} active {% endif %}">
-            <img src="{{ top_post.image.url }}" class="d-block w-100 carousel_img" alt="{{ top_post.title }}">
+            <div class="d-flex justify-content-center">
+              <div class="carousel-img-container">
+                <img src="{{ top_post.image.url }}" class="d-block w-100 carousel_img img-fluid" alt="{{ top_post.title }}">
+              </div>
+            </div>
             <div class="carousel-caption">
-              <h3>{{ top_post.title|title }}</h3>
+              <a href="{% url 'postDetails' top_post.pk %}" class="text-decoration-none text-center" data-post-pk="{{ post.pk }}" data-show-post-detail>
+                <h5><strong class="card-title fst-italic title_effect">{{ top_post.title|title }}</strong></h5>
+              </a>    
             </div>
           </div>
           {% endfor %}

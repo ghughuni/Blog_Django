@@ -20,6 +20,7 @@ from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
+from django.urls import reverse
 
 
 def index(request):
@@ -106,6 +107,11 @@ def postDetails(request, pk):
     total_likes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('like'))['like__sum']
     total_unlikes = Likes_Unlikes.objects.filter(post=pk).aggregate(Sum('unlike'))['unlike__sum']
 
+    # Create the URL for sharing on Facebook
+    current_url = request.build_absolute_uri(reverse('postDetails', args=[pk]))
+    facebook_share_url = f'https://www.facebook.com/sharer/sharer.php?u={current_url}'
+
+
     if total_likes and total_unlikes:
         pass  
     else:
@@ -180,6 +186,7 @@ def postDetails(request, pk):
         'user_has_unliked': user_has_unliked,
         'profile_user': profile_user,
         'users': users,
+        'facebook_share_url':facebook_share_url,
     }
     return render(request, 'post_detail.html', context)
 
@@ -344,7 +351,14 @@ def logout_view(request):
     return redirect('/')
 
 def Not_Found(request, exception=None):
-    return render(request, '404.html')
+    if request.user.is_authenticated:
+        profile_user=User_profiles.objects.get(author=request.user)
+    else:
+        profile_user=None
+    context = {
+        'profile_user': profile_user,
+        }
+    return render(request, '404.html', context)
 
 def page_faq(request):
     try:
