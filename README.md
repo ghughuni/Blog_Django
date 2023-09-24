@@ -1,4 +1,6 @@
-[Blog_Django](https://ghughuni.pythonanywhere.com/)
+#Blog_Django
+
+https://ghughuni.pythonanywhere.com/
 
 # Technologies Used:
 ## Front-end:
