@@ -1,4 +1,5 @@
-# Blog_Django
+[Blog_Django](https://ghughuni.pythonanywhere.com/)
+
 # Technologies Used:
 ## Front-end:
 - *HTML:* The foundation of my blog's structure and content.
