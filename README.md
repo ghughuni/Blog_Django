@@ -1,6 +1,6 @@
 # Blog_Django
 
-https://ghughuni.pythonanywhere.com/
+https://guguni.pythonanywhere.com/
 
 # Technologies Used:
 ## Front-end:
