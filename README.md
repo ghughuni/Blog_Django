@@ -1,4 +1,4 @@
-#Blog_Django
+# Blog_Django
 
 https://ghughuni.pythonanywhere.com/
 
