@@ -837,4 +837,23 @@ function removeMessages() {
 }
 
 
+// scroll-to-top button
+const scrollToTopButton = document.getElementById('scroll-to-top');
+
+// Show the button when the user scrolls down
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 200) {
+        scrollToTopButton.style.visibility = 'visible';
+    } else {
+        scrollToTopButton.style.visibility = 'hidden';
+    }
+});
+
+// Scroll to the top when the button is clicked
+scrollToTopButton.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' 
+    });
+});
 

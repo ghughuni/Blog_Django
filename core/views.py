@@ -158,10 +158,10 @@ def postDetails(request, pk):
         ],
     }
     
-    if ip_address not in post.viewed_ips:
-        post.views += 1 
-        post.viewed_ips.append(ip_address)
-        post.save()
+    # if ip_address not in post.viewed_ips:
+    post.views += 1 
+    post.viewed_ips.append(ip_address)
+    post.save()
     comments = post.comment_set.all().order_by('-created')
     reply_comments = ReplyComments.objects.all().order_by('-created')
 

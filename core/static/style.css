@@ -1,6 +1,16 @@
 body {
-  background-color: antiquewhite;
+  background-color: #f0eada;
   font-family: 'Libre Baskerville', serif, !important;
+}
+
+.navbar-brand {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 24px; 
+  transition: color 0.3s ease-in-out; 
+}
+
+.navbar-brand:hover {
+  color: #ff5733 !important;
 }
 
 .nav-effect:hover {
@@ -27,7 +37,7 @@ body {
 }
 
 .title_effect:hover {
-  color: #e91111;
+  color: #ff5733;
   text-shadow:
     1px 1px 2px black,
     0 0 1em rgb(92, 92, 92),
@@ -41,7 +51,7 @@ body {
 
 .tag-effect:hover {
   transform: scale(1.05);
-  color: #e91111;
+  color: #ff5733;
   text-shadow: 1px 1px black;
 }
 
@@ -116,6 +126,37 @@ body {
   .post_mob {
     width: 83%;
   }
+
+  .top-link {
+    font-size: 1.25rem;
+    position: fixed;
+    bottom: 3rem;
+    right: 3rem;
+    background: #ff5733;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.5rem;
+    color: #fff;
+    animation: bounce 2s ease-in-out infinite;
+    visibility: hidden;
+    z-index: 1000; 
+    cursor: pointer;
+  }
+
+  @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+      }
+      40% {
+          transform: translateY(-30px);
+      }
+      60% {
+          transform: translateY(-15px);
+      }
+  }
+
 }
 
 @media only screen and (max-width: 992px) {
